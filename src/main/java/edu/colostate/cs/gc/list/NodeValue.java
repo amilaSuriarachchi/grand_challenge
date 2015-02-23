@@ -1,0 +1,13 @@
+package edu.colostate.cs.gc.list;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: amila
+ * Date: 2/21/15
+ * Time: 12:59 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public interface NodeValue  {
+
+    public boolean isBefore(NodeValue value);
+}

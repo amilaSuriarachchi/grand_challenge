@@ -111,7 +111,7 @@ public class EventDataProcessor {
             isChanged = (currentPosition != prePosition) && (prePosition < 10);
         }
 
-        if (isChanged && (event.getDropOffTime() - this.startTime > Constants.WINDOW_SIZE)) {
+        if (isChanged && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
             generateRouteChangeEvent(event.getPickUpTime(), event.getDropOffTime());
         }
 

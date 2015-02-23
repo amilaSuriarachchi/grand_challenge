@@ -9,5 +9,6 @@ package edu.colostate.cs.gc.util;
  */
 public interface Constants {
 
-    public static final int WINDOW_SIZE = 30 * 60 * 1000;
+    public static final int LARGE_WINDOW_SIZE = 30 * 60 * 1000;
+    public static final int SMALL_WINDOW_SIZE = 15 * 60 * 1000;
 }

@@ -19,7 +19,7 @@ public class DropOffEvent {
     private Route route;
 
     public boolean isExpired(long lastEventTime) {
-        return lastEventTime - this.dropOffTime > Constants.WINDOW_SIZE;
+        return lastEventTime - this.dropOffTime > Constants.LARGE_WINDOW_SIZE;
     }
 
     public long getPickUpTime() {
