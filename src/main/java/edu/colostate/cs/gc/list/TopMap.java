@@ -17,6 +17,11 @@ public class TopMap {
     public static final int HEAD_SIZE = 10;
 
     private Map<Object, TopListNode> keyMap = new HashMap<Object, TopListNode>(5000);
+
+    // head and tail of the doubly linked list. this doubly linked list keep a list sorted by
+    // the compare function defined by the user.
+    // always header position will be 0 and it increases towards the tail.
+    // increment position refers to moving towards the tail and decrement position refers to moving towards the head.
     private TopListNode tail;
     private TopListNode head;
 
@@ -61,6 +66,7 @@ public class TopMap {
         // increment positions of next set of nodes
         TopListNode currentNode = topListNode.getNextNode();
         while (currentNode != null) {
+            // move the position one up.
             currentNode.decrementPosition();
             currentNode = currentNode.getNextNode();
         }
@@ -98,12 +104,12 @@ public class TopMap {
     }
 
     /**
-     * Decrement the position of node with this key.
+     * Increment the position of node with this key.
      *
      * @param key
      * @return - true if position changed and it was within top 10
      */
-    public boolean decrementPosition(Object key) {
+    public boolean incrementPosition(Object key) {
 
         TopListNode topListNode = this.keyMap.get(key);
         int prePosition = topListNode.getPosition();
@@ -114,7 +120,7 @@ public class TopMap {
 
         }
 
-        this.tail = topListNode.decrementPosition(this.tail);
+        this.tail = topListNode.incrementPosition(this.tail);
         this.head.setPreNode(null);
         int currentPosition = topListNode.getPosition();
         return (prePosition != currentPosition) && (prePosition < HEAD_SIZE);
@@ -122,12 +128,12 @@ public class TopMap {
     }
 
     /**
-     * Increment the position of node with this key.
+     * Decrement the position of node with this key.
      *
      * @param key
      * @return - true if position get changed and it is within top 10
      */
-    public boolean incrementPosition(Object key) {
+    public boolean decrementPosition(Object key) {
         TopListNode topListNode = this.keyMap.get(key);
         int prePosition = topListNode.getPosition();
 
@@ -137,7 +143,7 @@ public class TopMap {
             this.tail = topListNode.getPreNode();
         }
 
-        this.head = topListNode.incrementPosition(this.head);
+        this.head = topListNode.decrementPosition(this.head);
         this.tail.setNextNode(null);
         int currentPosition = topListNode.getPosition();
         return (prePosition != currentPosition) && (currentPosition < HEAD_SIZE);
@@ -152,6 +158,10 @@ public class TopMap {
             currentNode = currentNode.getNextNode();
         }
         return nodeValues;
+    }
+
+    public int getPosition(Object key){
+        return this.keyMap.get(key).getPosition();
     }
 
     public boolean checkListConsistency() {

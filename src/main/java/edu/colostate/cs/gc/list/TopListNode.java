@@ -20,7 +20,7 @@ public class TopListNode {
         this.nodeValue = nodeValue;
     }
 
-    public TopListNode incrementPosition(TopListNode head) {
+    public TopListNode decrementPosition(TopListNode head) {
 
         while ((this.preNode != null) && (this.compare(this.preNode) == 1)) {
             //swap two nodes.
@@ -54,7 +54,7 @@ public class TopListNode {
     }
 
 
-    public TopListNode decrementPosition(TopListNode tail) {
+    public TopListNode incrementPosition(TopListNode tail) {
         while ((this.nextNode != null) && (this.compare(this.nextNode) == -1)) {
 
             TopListNode currentNext = this.nextNode;

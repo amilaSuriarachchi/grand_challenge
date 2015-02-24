@@ -54,7 +54,8 @@ public class EventDataProcessor {
         } else {
             RouteCount routeCount = (RouteCount) this.topMap.get(event.getRoute());
             routeCount.incrementCount();
-            isChanged = this.topMap.incrementPosition(event.getRoute()) || isChanged;
+            // after increasing the count we need to move this element towards the head. i.e reduce position.
+            isChanged = this.topMap.decrementPosition(event.getRoute()) || isChanged;
         }
 
         // pull out expired events
@@ -65,7 +66,7 @@ public class EventDataProcessor {
             if (routeCount.isEmpty()) {
                 isChanged = this.topMap.remove(expiredEvent.getRoute()) || isChanged;
             } else {
-                isChanged = this.topMap.decrementPosition(expiredEvent.getRoute()) || isChanged;
+                isChanged = this.topMap.incrementPosition(expiredEvent.getRoute()) || isChanged;
             }
         }
 
