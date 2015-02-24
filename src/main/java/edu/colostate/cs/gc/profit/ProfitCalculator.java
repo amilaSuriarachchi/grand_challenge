@@ -53,9 +53,9 @@ public class ProfitCalculator {
                     this.dropTaxis.remove(event.getMedallion());
                 }
                 if (preProfitability > profitCellNode.getProfitability()){
-                    isChanged = isChanged || this.topMap.decrementPosition(pickUpNode);
+                    isChanged = this.topMap.decrementPosition(pickUpNode) || isChanged;
                 } else {
-                    isChanged = isChanged || this.topMap.incrementPosition(pickUpNode);
+                    isChanged = this.topMap.incrementPosition(pickUpNode) || isChanged;
                 }
 
             }
@@ -70,9 +70,9 @@ public class ProfitCalculator {
                     this.topMap.remove(paymentEvent.getPickUpCell());
                 } else {
                     if (preProfitability > profitCellNode.getProfitability()){
-                        isChanged = isChanged || this.topMap.decrementPosition(paymentEvent.getPickUpCell());
+                        isChanged = this.topMap.decrementPosition(paymentEvent.getPickUpCell()) || isChanged;
                     } else {
-                        isChanged = isChanged || this.topMap.incrementPosition(paymentEvent.getPickUpCell());
+                        isChanged = this.topMap.incrementPosition(paymentEvent.getPickUpCell()) || isChanged;
                     }
 
                 }
@@ -84,13 +84,13 @@ public class ProfitCalculator {
             Cell dropOffNode = event.getDropOffCell();
             if (!this.topMap.containsKey(dropOffNode)){
                 ProfitCellNode profitCellNode = new ProfitCellNode();
-                isChanged = isChanged || this.topMap.add(dropOffNode, profitCellNode);
+                isChanged = this.topMap.add(dropOffNode, profitCellNode) || isChanged;
                 // we need to increment the position since it added as last node and there can be -1 profitability nodes
-                isChanged = isChanged || this.topMap.incrementPosition(dropOffNode);
+                isChanged =  this.topMap.incrementPosition(dropOffNode) || isChanged;
             } else {
                 ProfitCellNode profitCellNode = (ProfitCellNode) this.topMap.get(dropOffNode);
                 profitCellNode.increaseEmptyTaxi();
-                isChanged = isChanged || this.topMap.decrementPosition(dropOffNode);
+                isChanged = this.topMap.decrementPosition(dropOffNode) || isChanged;
             }
 
             while ((this.dropWindow.size() > 0)
@@ -104,7 +104,7 @@ public class ProfitCalculator {
                     if (profitCellNode.isEmpty()){
                         this.topMap.remove(paymentEvent.getPickUpCell());
                     } else {
-                        isChanged = isChanged || this.topMap.incrementPosition(paymentEvent.getPickUpCell());
+                        isChanged = this.topMap.incrementPosition(paymentEvent.getPickUpCell()) || isChanged;
                     }
                 }
             }

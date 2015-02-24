@@ -9,5 +9,5 @@ package edu.colostate.cs.gc.list;
  */
 public interface NodeValue  {
 
-    public boolean isBefore(NodeValue value);
+    public int compare(NodeValue value);
 }

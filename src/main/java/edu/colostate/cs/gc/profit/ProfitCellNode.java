@@ -146,8 +146,15 @@ public class ProfitCellNode implements NodeValue {
         return (this.numOfFares == 0) && (this.numOfEmptyTaxis == 0);
     }
 
-    public boolean isBefore(NodeValue value) {
-        return this.profitability > ((ProfitCellNode) value).profitability;
+    public int compare(NodeValue value) {
+        double newProfitability = ((ProfitCellNode) value).profitability;
+        if (this.profitability > newProfitability){
+            return 1;
+        } else if (this.profitability < newProfitability){
+            return -1;
+        }  else {
+            return 0;
+        }
     }
 
     public double getProfitability() {

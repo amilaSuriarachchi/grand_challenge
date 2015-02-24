@@ -22,7 +22,7 @@ public class TopListNode {
 
     public TopListNode incrementPosition(TopListNode head) {
 
-        while ((this.preNode != null) && (this.isBefore(this.preNode))) {
+        while ((this.preNode != null) && (this.compare(this.preNode) == 1)) {
             //swap two nodes.
             TopListNode currentPreNode = this.preNode;
             TopListNode currentNextNode = this.nextNode;
@@ -55,7 +55,7 @@ public class TopListNode {
 
 
     public TopListNode decrementPosition(TopListNode tail) {
-        while ((this.nextNode != null) && (this.nextNode.isBefore(this))) {
+        while ((this.nextNode != null) && (this.compare(this.nextNode) == -1)) {
 
             TopListNode currentNext = this.nextNode;
             TopListNode currentPre = this.preNode;
@@ -85,8 +85,12 @@ public class TopListNode {
         }
     }
 
-    public boolean isBefore(TopListNode topListNode) {
-        return (topListNode == null) || this.nodeValue.isBefore(topListNode.nodeValue);
+    public int compare(TopListNode node) {
+        if (node == null){
+            return 1;
+        } else {
+            return this.nodeValue.compare(node.nodeValue);
+        }
     }
 
     public void incrementPosition() {

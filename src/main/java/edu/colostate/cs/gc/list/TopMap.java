@@ -16,7 +16,7 @@ public class TopMap {
 
     public static final int HEAD_SIZE = 10;
 
-    private Map<Object, TopListNode> keyMap = new HashMap<Object, TopListNode>();
+    private Map<Object, TopListNode> keyMap = new HashMap<Object, TopListNode>(5000);
     private TopListNode tail;
     private TopListNode head;
 
@@ -109,14 +109,15 @@ public class TopMap {
         int prePosition = topListNode.getPosition();
         if ((topListNode == this.head) &&
                 (topListNode.getNextNode() != null) &&
-                (topListNode.getNextNode().isBefore(topListNode))) {
+                (topListNode.compare(topListNode.getNextNode()) == -1)) {
             this.head = topListNode.getNextNode();
-            this.head.setPreNode(null);
+
         }
 
         this.tail = topListNode.decrementPosition(this.tail);
+        this.head.setPreNode(null);
         int currentPosition = topListNode.getPosition();
-        return (prePosition != currentPosition) && (currentPosition < HEAD_SIZE);
+        return (prePosition != currentPosition) && (prePosition < HEAD_SIZE);
 
     }
 
@@ -132,12 +133,12 @@ public class TopMap {
 
         if ((topListNode == this.tail) &&
                 (topListNode.getPreNode() != null) &&
-                (topListNode.isBefore(topListNode.getPreNode()))) {
+                (topListNode.compare(topListNode.getPreNode()) == 1)) {
             this.tail = topListNode.getPreNode();
-            this.tail.setNextNode(null);
         }
 
         this.head = topListNode.incrementPosition(this.head);
+        this.tail.setNextNode(null);
         int currentPosition = topListNode.getPosition();
         return (prePosition != currentPosition) && (currentPosition < HEAD_SIZE);
     }
@@ -158,10 +159,9 @@ public class TopMap {
         int currentPosition = 0;
         boolean isCorrect = true;
         while (currentNode != null) {
-            if ((currentNode.getPosition() != currentPosition) || !currentNode.isBefore(currentNode.getNextNode())) {
+            if ((currentNode.getPosition() != currentPosition) || currentNode.compare(currentNode.getNextNode()) == -1) {
                 isCorrect = false;
             }
-
             if ((currentNode.getNextNode() != null) && (currentNode.getNextNode().getPreNode() != currentNode)) {
                 isCorrect = false;
             }
@@ -173,12 +173,21 @@ public class TopMap {
         currentNode = this.tail;
         while (currentNode != null) {
             if (currentNode.getPosition() != currentPosition) {
+                System.out.println("Error at position " + currentPosition);
                 isCorrect = false;
             }
             currentNode = currentNode.getNextNode();
             currentPosition--;
         }
         return isCorrect;
+    }
+
+    public void displayDetails(){
+        System.out.println("key count ==> " + this.keyMap.size());
+        if (!checkListConsistency()){
+            System.out.println("An error");
+        }
+        System.out.println("Tail position ==> " + this.tail.getPosition());
     }
 
 }
