@@ -19,9 +19,6 @@ public class ProfitCalculator {
 
     private Queue<PaymentEvent> paymentWindow = new LinkedList<PaymentEvent>();
     private Queue<PaymentEvent> dropWindow = new LinkedList<PaymentEvent>();
-    private Set<String> dropTaxis = new HashSet<String>();
-
-
     private TopMap topMap = new TopMap();
 
     private long startTime;
@@ -48,10 +45,13 @@ public class ProfitCalculator {
                 ProfitCellNode profitCellNode = (ProfitCellNode) this.topMap.get(pickUpNode);
                 double preProfitability = profitCellNode.getProfitability();
                 profitCellNode.addFare(event.getFare());
-                if (this.dropTaxis.contains(event.getMedallion())){
+
+                //we should reduce number of taxi if the drop in time has not expired 30 mints
+                if (profitCellNode.containsTaxi(event.getMedallion())){
                     profitCellNode.reduceEmptyTaxi();
-                    this.dropTaxis.remove(event.getMedallion());
+                    profitCellNode.removeTaxi(event.getMedallion());
                 }
+
                 if (preProfitability > profitCellNode.getProfitability()){
                     isChanged = this.topMap.incrementPosition(pickUpNode) || isChanged;
                 } else {
@@ -80,15 +80,18 @@ public class ProfitCalculator {
         } else {
             // this is just the drop off information. i.e an empty taxi has arrived to this location.
             this.dropWindow.add(event);
-            this.dropTaxis.add(event.getMedallion());
+
             Cell dropOffNode = event.getDropOffCell();
+
             if (!this.topMap.containsKey(dropOffNode)){
                 ProfitCellNode profitCellNode = new ProfitCellNode();
+                profitCellNode.addTaxi(event.getMedallion());
                 isChanged = this.topMap.add(dropOffNode, profitCellNode) || isChanged;
-                // we need to increment the position since it added as last node and there can be -1 profitability nodes
+                // we need to decrement the position since it added as last node and there can be -1 profitability nodes
                 isChanged =  this.topMap.decrementPosition(dropOffNode) || isChanged;
             } else {
                 ProfitCellNode profitCellNode = (ProfitCellNode) this.topMap.get(dropOffNode);
+                profitCellNode.addTaxi(event.getMedallion());
                 profitCellNode.increaseEmptyTaxi();
                 isChanged = this.topMap.incrementPosition(dropOffNode) || isChanged;
             }
@@ -96,15 +99,24 @@ public class ProfitCalculator {
             while ((this.dropWindow.size() > 0)
                     && (this.dropWindow.peek().isExpired(event.getDropOffTime(), Constants.LARGE_WINDOW_SIZE))){
                 PaymentEvent paymentEvent = this.dropWindow.poll();
-                if (this.dropTaxis.contains(paymentEvent.getMedallion())){
-                    // there is a possibility that the taxi for this drop event already has gone and received a
-                    // payment event.
-                    ProfitCellNode profitCellNode = (ProfitCellNode) this.topMap.get(paymentEvent.getPickUpCell());
-                    profitCellNode.reduceEmptyTaxi();
-                    if (profitCellNode.isEmpty()){
-                        this.topMap.remove(paymentEvent.getPickUpCell());
-                    } else {
-                        isChanged = this.topMap.decrementPosition(paymentEvent.getPickUpCell()) || isChanged;
+
+                if (this.topMap.containsKey(paymentEvent.getDropOffCell())){
+                    //this cell may have been removed by earlier processing of dropping event due to taxi leaving.
+                    //or by payment reduction due to same reasoning.
+                    ProfitCellNode profitCellNode = (ProfitCellNode) this.topMap.get(paymentEvent.getDropOffCell());
+
+                    if (profitCellNode.containsTaxi(paymentEvent.getMedallion())){
+                        // there is a possibility that the taxi for this drop event already has gone and received a
+                        // payment event.
+                        profitCellNode.reduceEmptyTaxi();
+                        profitCellNode.removeTaxi(paymentEvent.getMedallion());
+
+                        if (profitCellNode.isEmpty()){
+                            this.topMap.remove(paymentEvent.getDropOffCell());
+                        } else {
+                            isChanged = this.topMap.decrementPosition(paymentEvent.getDropOffCell()) || isChanged;
+                        }
+
                     }
                 }
             }

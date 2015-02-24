@@ -2,9 +2,7 @@ package edu.colostate.cs.gc.profit;
 
 import edu.colostate.cs.gc.list.NodeValue;
 
-import java.util.Comparator;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,6 +19,8 @@ public class ProfitCellNode implements NodeValue {
     private double midFare;
     private int numOfEmptyTaxis;
     private int numOfFares;
+
+    private Set<String> dropTaxis = new HashSet<String>();
 
     /**
      * this constructor is being created from an drop off event.
@@ -155,6 +155,18 @@ public class ProfitCellNode implements NodeValue {
         }  else {
             return 0;
         }
+    }
+
+    public boolean containsTaxi(String medallion){
+        return this.dropTaxis.contains(medallion);
+    }
+
+    public void removeTaxi(String medallion){
+        this.dropTaxis.remove(medallion);
+    }
+
+    public void addTaxi(String medallion){
+        this.dropTaxis.add(medallion);
     }
 
     public double getProfitability() {

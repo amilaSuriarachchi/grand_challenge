@@ -1,5 +1,7 @@
 package edu.colostate.cs.gc.list;
 
+import edu.colostate.cs.gc.event.Cell;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -90,9 +92,7 @@ public class TopMap {
                 this.tail.setNextNode(null);
             }
         }
-
         return prePosition < HEAD_SIZE;
-
     }
 
     public NodeValue get(Object key) {

@@ -1,10 +1,10 @@
-package edu.colostate.cs.gc;
+package edu.colostate.cs.gc.route;
 
 import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.event.DropOffEvent;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.exception.OutlierPointException;
-import edu.colostate.cs.gc.route.EventDataProcessor;
+import edu.colostate.cs.gc.util.Constants;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -20,25 +20,13 @@ import java.text.SimpleDateFormat;
  * Time: 1:59 PM
  * To change this template use File | Settings | File Templates.
  */
-public class DataFileReader {
-
-    private int[][] gridLocations;
-
-    private int outsidePoints;
-    private int total;
-
-    // http://andrew.hedges.name/experiments/haversine/
-    double topLatitude = 41.47943;
-    double bottomLatitude = 40.13087;
-    double leftLongitude = -74.91952;
-    double rightLongitude = -73.13789;
-
-    private EventDataProcessor eventDataProcessor;
+public class RouteEventEmitter {
 
 
-    public DataFileReader() {
-        this.gridLocations = new int[300][300];
-        this.eventDataProcessor = new EventDataProcessor();
+    private RouteProcessor eventDataProcessor;
+
+    public RouteEventEmitter() {
+        this.eventDataProcessor = new RouteProcessor();
     }
 
 
@@ -59,8 +47,8 @@ public class DataFileReader {
                     dropOffEvent.setPickUpTime(dateFormat.parse(values[2]).getTime());
                     dropOffEvent.setDropOffTime(dateFormat.parse(values[3]).getTime());
                     Route route = new Route();
-                    route.setDropOffCell(getCell(Double.parseDouble(values[6]),Double.parseDouble(values[7])));
-                    route.setPickUpCell(getCell(Double.parseDouble(values[8]),Double.parseDouble(values[9])));
+                    route.setPickUpCell(getCell(Double.parseDouble(values[6]), Double.parseDouble(values[7])));
+                    route.setDropOffCell(getCell(Double.parseDouble(values[8]), Double.parseDouble(values[9])));
                     dropOffEvent.setRoute(route);
                     this.eventDataProcessor.processEvent(dropOffEvent);
 
@@ -82,11 +70,11 @@ public class DataFileReader {
     }
 
     private Cell getCell(double longitude, double latitude) throws OutlierPointException {
-        if ((longitude < this.rightLongitude) && (longitude > this.leftLongitude) &&
-                (latitude < this.topLatitude) && (latitude > this.bottomLatitude)) {
+        if ((longitude < Constants.RIGHT_LONGITUDE) && (longitude > Constants.LEFT_LONGITUDE) &&
+                (latitude < Constants.TOP_LATITUDE) && (latitude > Constants.BOTTOM_LATITUDE)) {
 
-            int column = (int) Math.floor(300 * (longitude - this.leftLongitude) / (this.rightLongitude - this.leftLongitude));
-            int row = (int) Math.floor(300 * (this.topLatitude - latitude) / (this.topLatitude - this.bottomLatitude));
+            int column = (int) Math.floor((longitude - Constants.LEFT_LONGITUDE) / Constants.EAST_CELL_SIZE_500);
+            int row = (int) Math.floor((Constants.TOP_LATITUDE - latitude) / Constants.SOUTH_CELL_SIZE_500);
             return new Cell(column, row);
 
         } else {
@@ -96,6 +84,6 @@ public class DataFileReader {
 
 
     public static void main(String[] args) {
-        new DataFileReader().loadData();
+        new RouteEventEmitter().loadData();
     }
 }

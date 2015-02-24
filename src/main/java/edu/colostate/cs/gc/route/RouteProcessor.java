@@ -20,7 +20,7 @@ import java.util.Queue;
  * Time: 3:36 PM
  * To change this template use File | Settings | File Templates.
  */
-public class EventDataProcessor {
+public class RouteProcessor {
 
     private Queue<DropOffEvent> window = new LinkedList<DropOffEvent>();
 
@@ -31,7 +31,7 @@ public class EventDataProcessor {
 
     private BufferedWriter eventWriter;
 
-    public EventDataProcessor() {
+    public RouteProcessor() {
         try {
             this.eventWriter = new BufferedWriter(new FileWriter("data/top_routs.txt"));
         } catch (IOException e) {
