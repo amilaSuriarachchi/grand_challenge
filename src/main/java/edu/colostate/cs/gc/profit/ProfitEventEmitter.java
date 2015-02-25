@@ -40,6 +40,7 @@ public class ProfitEventEmitter {
                 String[] values = line.split(",");
                 try {
                     PaymentEvent paymentEvent = new PaymentEvent();
+                    paymentEvent.setStartTime(System.currentTimeMillis());
                     paymentEvent.setMedallion(values[0].trim());
                     paymentEvent.setPickUpTime(dateFormat.parse(values[2]).getTime());
                     paymentEvent.setDropOffTime(dateFormat.parse(values[3]).getTime());
@@ -57,6 +58,8 @@ public class ProfitEventEmitter {
 //                    System.out.println(e.getMessage());
                 }
             }
+
+            this.profitCalculator.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

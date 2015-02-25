@@ -20,6 +20,8 @@ public class PaymentEvent {
     private Cell pickUpCell;
     private Cell dropOffCell;
 
+    private long startTime;
+
     public boolean isExpired(long lastEventTime, long windowSize) {
         return (lastEventTime - this.dropOffTime) > windowSize;
     }
@@ -78,5 +80,13 @@ public class PaymentEvent {
 
     public void setDropOffCell(Cell dropOffCell) {
         this.dropOffCell = dropOffCell;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 }

@@ -44,6 +44,7 @@ public class RouteEventEmitter {
                 try {
 
                     DropOffEvent dropOffEvent = new DropOffEvent();
+                    dropOffEvent.setStartTime(System.currentTimeMillis());
                     dropOffEvent.setPickUpTime(dateFormat.parse(values[2]).getTime());
                     dropOffEvent.setDropOffTime(dateFormat.parse(values[3]).getTime());
                     Route route = new Route();

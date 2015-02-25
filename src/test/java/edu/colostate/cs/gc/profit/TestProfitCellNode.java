@@ -1,5 +1,6 @@
 package edu.colostate.cs.gc.profit;
 
+import edu.colostate.cs.gc.event.Cell;
 import junit.framework.TestCase;
 
 import java.util.Comparator;
@@ -15,7 +16,7 @@ import java.util.PriorityQueue;
 public class TestProfitCellNode extends TestCase {
 
     public void testFare() {
-        ProfitCellNode profitCellNode = new ProfitCellNode(20.0);
+        ProfitCellNode profitCellNode = new ProfitCellNode(20.0, new Cell(2,4));
         assertEquals(profitCellNode.getMidFare(), 20.0);
 
         profitCellNode.addFare(25.0);

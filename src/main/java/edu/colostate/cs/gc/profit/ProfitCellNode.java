@@ -1,5 +1,6 @@
 package edu.colostate.cs.gc.profit;
 
+import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.list.NodeValue;
 
 import java.util.*;
@@ -20,16 +21,19 @@ public class ProfitCellNode implements NodeValue {
     private int numOfEmptyTaxis;
     private int numOfFares;
 
+    private Cell cell;
+
     private Set<String> dropTaxis = new HashSet<String>();
 
     /**
      * this constructor is being created from an drop off event.
      */
-    public ProfitCellNode() {
+    public ProfitCellNode(Cell cell) {
         this.profitability = 0;
         this.numOfEmptyTaxis = 1;
         this.midFare = 0;
         this.numOfFares = 0;
+        this.cell = cell;
     }
 
     /**
@@ -39,11 +43,12 @@ public class ProfitCellNode implements NodeValue {
      *
      * @param fare
      */
-    public ProfitCellNode(double fare) {
+    public ProfitCellNode(double fare, Cell cell) {
         this.midFare = fare;
         this.numOfFares = 1;
         this.numOfEmptyTaxis = 0;
         this.profitability = UNDEFINED_PROFITABILITY;
+        this.cell = cell;
     }
 
     private PriorityQueue<Double> lowQueue = new PriorityQueue<Double>(20, new Comparator<Double>() {
@@ -169,11 +174,19 @@ public class ProfitCellNode implements NodeValue {
         this.dropTaxis.add(medallion);
     }
 
-    public double getProfitability() {
-        return profitability;
+    public Cell getCell() {
+        return cell;
+    }
+
+    public int getNumOfEmptyTaxis() {
+        return numOfEmptyTaxis;
     }
 
     public double getMidFare() {
         return midFare;
+    }
+
+    public double getProfitability() {
+        return profitability;
     }
 }

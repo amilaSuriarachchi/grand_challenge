@@ -16,6 +16,8 @@ public class DropOffEvent {
     private int tripTime;
     private int tripDistance;
 
+    private long startTime;
+
     private Route route;
 
     public boolean isExpired(long lastEventTime) {
@@ -60,5 +62,13 @@ public class DropOffEvent {
 
     public void setRoute(Route route) {
         this.route = route;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 }

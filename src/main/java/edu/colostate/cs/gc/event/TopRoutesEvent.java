@@ -34,4 +34,28 @@ public class TopRoutesEvent {
         }
         return result;
     }
+
+    public long getPickUpTime() {
+        return pickUpTime;
+    }
+
+    public void setPickUpTime(long pickUpTime) {
+        this.pickUpTime = pickUpTime;
+    }
+
+    public long getDropOffTime() {
+        return dropOffTime;
+    }
+
+    public void setDropOffTime(long dropOffTime) {
+        this.dropOffTime = dropOffTime;
+    }
+
+    public List<Route> getRoutes() {
+        return routes;
+    }
+
+    public void setRoutes(List<Route> routes) {
+        this.routes = routes;
+    }
 }

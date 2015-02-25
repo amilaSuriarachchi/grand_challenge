@@ -9,6 +9,8 @@ import edu.colostate.cs.gc.util.Constants;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -30,6 +32,7 @@ public class RouteProcessor {
     private long startTime;
 
     private BufferedWriter eventWriter;
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public RouteProcessor() {
         try {
@@ -71,21 +74,29 @@ public class RouteProcessor {
         }
 
         if (isChanged && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
-            generateRouteChangeEvent(event.getPickUpTime(), event.getDropOffTime(), this.topMap.getTopValues());
+            generateRouteChangeEvent(event.getStartTime(), event.getPickUpTime(),
+                    event.getDropOffTime(), this.topMap.getTopValues());
         }
 
     }
 
-    public void generateRouteChangeEvent(long pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {
-        TopRoutesEvent topRoutesEvent = new TopRoutesEvent(pickUpTime, dropOffTime);
-        for (NodeValue nodeValue : nodeValues) {
-            topRoutesEvent.addRoute(((RouteCount) nodeValue).getRoute());
-        }
+    public void generateRouteChangeEvent(long startTime, long pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {
+//        TopRoutesEvent topRoutesEvent = new TopRoutesEvent(pickUpTime, dropOffTime);
+//        for (NodeValue nodeValue : nodeValues) {
+//            topRoutesEvent.addRoute(((RouteCount) nodeValue).getRoute());
+//        }
 
         try {
-            this.eventWriter.write(topRoutesEvent.toString());
+            this.eventWriter.write(this.simpleDateFormat.format(new Date(pickUpTime)) + ",");
+            this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
+            for (NodeValue nodeValue : nodeValues) {
+                RouteCount routeCount = (RouteCount) nodeValue;
+                this.eventWriter.write(routeCount.getRoute().toString());
+            }
+            this.eventWriter.write((System.currentTimeMillis() - startTime) + "");
             this.eventWriter.newLine();
-            this.eventWriter.flush();
+
+
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -95,6 +106,7 @@ public class RouteProcessor {
         this.topMap.displayDetails();
 
         try {
+            this.eventWriter.flush();
             this.eventWriter.close();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

@@ -1,7 +1,5 @@
 package edu.colostate.cs.gc.event;
 
-import edu.colostate.cs.gc.event.Cell;
-
 /**
  * Created with IntelliJ IDEA.
  * User: amila
