@@ -57,6 +57,7 @@ public class RouteProcessor {
         boolean isChanged = false;
         if (!this.topMap.containsKey(event.getRoute())) {
             isChanged = this.topMap.add(event.getRoute(), new RouteCount(1, event.getRoute()));
+            isChanged = this.topMap.decrementPosition(event.getRoute()) || isChanged;
         } else {
             RouteCount routeCount = (RouteCount) this.topMap.get(event.getRoute());
             routeCount.incrementCount();
@@ -85,17 +86,6 @@ public class RouteProcessor {
             this.lastRouteSet = getRouteSet(currentList);
 
         }
-
-        //TODO: check the isChanged variable. when there are many changes there is a possibility that one
-        //change would revert earlier one making lists same :use isSame instead of the change method?
-
-//        if (isChanged && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
-//            Set<NodeValue> currentSet = new HashSet<NodeValue>(this.topMap.getTopValues());
-//            this.lastRouteSet.removeAll(currentSet);
-//            generateRouteChangeEvent(event.getStartTime(), event.getPickUpTime(),
-//                    event.getDropOffTime(), this.lastRouteSet, currentSet);
-//            this.lastRouteSet = currentSet;
-//        }
 
         this.windowAvg = (this.windowAvg * this.numOfMessages + this.window.size()) / (this.numOfMessages + 1);
         this.mapAvg = (this.mapAvg * this.numOfMessages + this.topMap.getMapSize()) / (this.numOfMessages + 1);

@@ -7,7 +7,7 @@ package edu.colostate.cs.gc.event;
  * Time: 5:12 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Route {
+public class Route implements Comparable<Route> {
 
     private Cell pickUpCell;
     private Cell dropOffCell;
@@ -43,6 +43,14 @@ public class Route {
     @Override
     public String toString() {
         return this.pickUpCell.toString() + "," + this.dropOffCell.toString() + ",";
+    }
+
+    public int compareTo(Route o) {
+        if (this.dropOffCell.compareTo(o.dropOffCell) == 0){
+            return this.pickUpCell.compareTo(o.pickUpCell);
+        } else {
+            return this.dropOffCell.compareTo(o.dropOffCell);
+        }
     }
 
     public Cell getPickUpCell() {

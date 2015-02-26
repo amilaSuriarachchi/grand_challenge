@@ -11,9 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -76,24 +74,10 @@ public class TopRouteProcessor {
 
         this.eventReceived++;
 
-        if (!isSame(preList, this.topMap.getTopValues())) {
+        if (!Util.isSame(preList, this.topMap.getTopValues())) {
             generateRouteChangeEvent(event.getStartTime(),
                     event.getPickUpTime(), event.getDropOffTime(), topMap.getTopValues());
         }
-    }
-
-    private boolean isSame(List<NodeValue> list1, List<NodeValue> list2){
-        Set<Route> s1 = getRouteSet(list1);
-        Set<Route> s2 = getRouteSet(list2);
-        return s1.containsAll(s2);
-    }
-
-    private Set<Route> getRouteSet(List<NodeValue> routeList) {
-        Set<Route> routes = new HashSet<Route>();
-        for (NodeValue nodeValue : routeList) {
-            routes.add(((RouteCount) nodeValue).getRoute());
-        }
-        return routes;
     }
 
     public void generateRouteChangeEvent(long startTime, long pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {

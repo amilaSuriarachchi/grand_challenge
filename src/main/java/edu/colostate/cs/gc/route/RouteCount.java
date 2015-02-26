@@ -39,7 +39,7 @@ public class RouteCount implements NodeValue {
         } else if (this.count < routeCount.count){
             return -1;
         } else {
-            return 0;
+            return this.route.compareTo(routeCount.route);
         }
     }
 
