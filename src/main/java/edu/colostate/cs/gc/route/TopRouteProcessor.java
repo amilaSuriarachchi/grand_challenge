@@ -57,16 +57,18 @@ public class TopRouteProcessor {
             if (!this.topMap.containsKey(routeCount.getRoute())) {
                 // need to create a new object to avoid conflicts with earlier process objects.
                 isChanged = this.topMap.add(routeCount.getRoute(),
-                        new RouteCount(routeCount.getCount(), routeCount.getRoute())) || isChanged;
+                        new RouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getUpdatedTime())) || isChanged;
                 isChanged = this.topMap.decrementPosition(routeCount.getRoute()) || isChanged;
             } else {
                 RouteCount existingValue = (RouteCount) this.topMap.get(routeCount.getRoute());
                 if (routeCount.getCount() < existingValue.getCount()) {
                     existingValue.setCount(routeCount.getCount());
+                    existingValue.setUpdatedTime(routeCount.getUpdatedTime());
                     //if the new value is less it has to move further down.
                     isChanged = this.topMap.incrementPosition(routeCount.getRoute()) || isChanged;
                 } else if (routeCount.getCount() > existingValue.getCount()) {
                     existingValue.setCount(routeCount.getCount());
+                    existingValue.setUpdatedTime(routeCount.getUpdatedTime());
                     isChanged = this.topMap.decrementPosition(routeCount.getRoute()) || isChanged;
                 }
             }

@@ -14,10 +14,12 @@ public class RouteCount implements NodeValue {
 
     private int count;
     private Route route;
+    private long updatedTime;
 
-    public RouteCount(int count, Route route) {
+    public RouteCount(int count, Route route, long updatedTime) {
         this.count = count;
         this.route = route;
+        this.updatedTime = updatedTime;
     }
 
     public void incrementCount(){
@@ -39,7 +41,14 @@ public class RouteCount implements NodeValue {
         } else if (this.count < routeCount.count){
             return -1;
         } else {
-            return this.route.compareTo(routeCount.route);
+            // i.e counts are equal we need to check for updated times
+            if (this.updatedTime > routeCount.updatedTime){
+                return 1;
+            } else if (this.updatedTime < routeCount.updatedTime){
+                return -1;
+            }  else {
+                return 0;
+            }
         }
     }
 
@@ -55,7 +64,15 @@ public class RouteCount implements NodeValue {
         this.count = count;
     }
 
-//    @Override
+    public long getUpdatedTime() {
+        return updatedTime;
+    }
+
+    public void setUpdatedTime(long updatedTime) {
+        this.updatedTime = updatedTime;
+    }
+
+    //    @Override
 //    public boolean equals(Object o) {
 //        if (this == o) return true;
 //        if (o == null || getClass() != o.getClass()) return false;

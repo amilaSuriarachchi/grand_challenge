@@ -56,11 +56,12 @@ public class RouteProcessor {
         // whether the current top ten events get changed.
         boolean isChanged = false;
         if (!this.topMap.containsKey(event.getRoute())) {
-            isChanged = this.topMap.add(event.getRoute(), new RouteCount(1, event.getRoute()));
+            isChanged = this.topMap.add(event.getRoute(), new RouteCount(1, event.getRoute(), event.getDropOffTime()));
             isChanged = this.topMap.decrementPosition(event.getRoute()) || isChanged;
         } else {
             RouteCount routeCount = (RouteCount) this.topMap.get(event.getRoute());
             routeCount.incrementCount();
+            routeCount.setUpdatedTime(event.getDropOffTime());
             // after increasing the count we need to move this element towards the head. i.e reduce position.
             isChanged = this.topMap.decrementPosition(event.getRoute()) || isChanged;
         }
