@@ -1,19 +1,17 @@
 package edu.colostate.cs.gc.route;
 
 import edu.colostate.cs.gc.event.DropOffEvent;
+import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
 import edu.colostate.cs.gc.list.NodeValue;
 import edu.colostate.cs.gc.list.TopMap;
 import edu.colostate.cs.gc.util.Constants;
+import edu.colostate.cs.gc.util.Util;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,15 +29,18 @@ public class RouteProcessor {
     private boolean isStarted = false;
     private long startTime;
 
-    private BufferedWriter eventWriter;
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private double windowAvg = 0;
+    private long numOfMessages = 0;
 
-    public RouteProcessor() {
-        try {
-            this.eventWriter = new BufferedWriter(new FileWriter("data/top_routs.txt"));
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+    private double mapAvg = 0;
+    private double listAvg = 0;
+
+    private TopRouteProcessor topRouteProcessor;
+    private Set<Route> lastRouteSet;
+
+    public RouteProcessor(TopRouteProcessor topRouteProcessor) {
+        this.topRouteProcessor = topRouteProcessor;
+        this.lastRouteSet = new HashSet<Route>();
     }
 
     public void processEvent(DropOffEvent event) {
@@ -48,6 +49,8 @@ public class RouteProcessor {
             this.isStarted = true;
             this.startTime = event.getDropOffTime();
         }
+
+        List<NodeValue> preList = topMap.getTopValues();
 
         this.window.add(event);
         // whether the current top ten events get changed.
@@ -73,43 +76,59 @@ public class RouteProcessor {
             }
         }
 
-        if (isChanged && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+        List<NodeValue> currentList = this.topMap.getTopValues();
+        if (!Util.isSame(preList, currentList) && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+//            Set<Route> currentRoutSet = getRouteSet(currentList);
+//            this.lastRouteSet.removeAll(currentRoutSet);
             generateRouteChangeEvent(event.getStartTime(), event.getPickUpTime(),
-                    event.getDropOffTime(), this.topMap.getTopValues());
+                    event.getDropOffTime(), this.lastRouteSet, currentList);
+            this.lastRouteSet = getRouteSet(currentList);
+
         }
+
+        //TODO: check the isChanged variable. when there are many changes there is a possibility that one
+        //change would revert earlier one making lists same :use isSame instead of the change method?
+
+//        if (isChanged && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+//            Set<NodeValue> currentSet = new HashSet<NodeValue>(this.topMap.getTopValues());
+//            this.lastRouteSet.removeAll(currentSet);
+//            generateRouteChangeEvent(event.getStartTime(), event.getPickUpTime(),
+//                    event.getDropOffTime(), this.lastRouteSet, currentSet);
+//            this.lastRouteSet = currentSet;
+//        }
+
+        this.windowAvg = (this.windowAvg * this.numOfMessages + this.window.size()) / (this.numOfMessages + 1);
+        this.mapAvg = (this.mapAvg * this.numOfMessages + this.topMap.getMapSize()) / (this.numOfMessages + 1);
+        this.listAvg = (this.listAvg * this.numOfMessages + this.topMap.getTailPosition()) / (this.numOfMessages + 1);
+        this.numOfMessages++;
 
     }
 
-    public void generateRouteChangeEvent(long startTime, long pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {
-//        TopRoutesEvent topRoutesEvent = new TopRoutesEvent(pickUpTime, dropOffTime);
-//        for (NodeValue nodeValue : nodeValues) {
-//            topRoutesEvent.addRoute(((RouteCount) nodeValue).getRoute());
-//        }
 
-        try {
-            this.eventWriter.write(this.simpleDateFormat.format(new Date(pickUpTime)) + ",");
-            this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
-            for (NodeValue nodeValue : nodeValues) {
-                RouteCount routeCount = (RouteCount) nodeValue;
-                this.eventWriter.write(routeCount.getRoute().toString());
-            }
-            this.eventWriter.write((System.currentTimeMillis() - startTime) + "");
-            this.eventWriter.newLine();
+    public void generateRouteChangeEvent(long startTime,
+                                         long pickUpTime,
+                                         long dropOffTime,
+                                         Set<Route> removedRoutes,
+                                         List<NodeValue> newRoutes) {
+        TopRoutesEvent topRoutesEvent = new TopRoutesEvent(startTime, pickUpTime, dropOffTime);
+        topRoutesEvent.setRemovedRoutes(removedRoutes);
+        topRoutesEvent.setNewRoutes(newRoutes);
+        this.topRouteProcessor.processEvent(topRoutesEvent);
+    }
 
 
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+    private Set<Route> getRouteSet(List<NodeValue> routeList) {
+        Set<Route> routes = new HashSet<Route>();
+        for (NodeValue nodeValue : routeList) {
+            routes.add(((RouteCount) nodeValue).getRoute());
         }
+        return routes;
     }
 
     public void close() {
+        System.out.println("Average window size ==> " + this.windowAvg);
+        System.out.println("Average map size ==> " + this.mapAvg);
+        System.out.println("Average tail position size ==> " + this.listAvg);
         this.topMap.displayDetails();
-
-        try {
-            this.eventWriter.flush();
-            this.eventWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
     }
 }

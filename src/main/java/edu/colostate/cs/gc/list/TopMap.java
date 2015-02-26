@@ -18,7 +18,7 @@ public class TopMap {
 
     public static final int HEAD_SIZE = 10;
 
-    private Map<Object, TopListNode> keyMap = new HashMap<Object, TopListNode>(5000);
+    private Map<Object, TopListNode> keyMap = new HashMap<Object, TopListNode>(600);
 
     // head and tail of the doubly linked list. this doubly linked list keep a list sorted by
     // the compare function defined by the user.
@@ -198,6 +198,19 @@ public class TopMap {
             System.out.println("An error");
         }
         System.out.println("Tail position ==> " + this.tail.getPosition());
+    }
+
+    public int getMapSize(){
+        return this.keyMap.size();
+    }
+
+    public int getTailPosition(){
+        if (this.tail == null){
+            return 0;
+        } else {
+            return this.tail.getPosition();
+        }
+
     }
 
 }

@@ -1,7 +1,11 @@
 package edu.colostate.cs.gc.event;
 
+import edu.colostate.cs.gc.list.NodeValue;
+import edu.colostate.cs.gc.route.RouteCount;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,27 +16,17 @@ import java.util.List;
  */
 public class TopRoutesEvent {
 
+    private long startTime;
     private long pickUpTime;
     private long dropOffTime;
 
-    private List<Route> routes = new ArrayList<Route>();
+    private Set<Route> removedRoutes;
+    private List<NodeValue> newRoutes;
 
-    public TopRoutesEvent(long pickUpTime, long dropOffTime) {
+    public TopRoutesEvent(long startTime, long pickUpTime, long dropOffTime) {
+        this.startTime = startTime;
         this.pickUpTime = pickUpTime;
         this.dropOffTime = dropOffTime;
-    }
-
-    public void addRoute(Route route){
-        this.routes.add(route);
-    }
-
-    @Override
-    public String toString() {
-        String result = this.pickUpTime + "," + this.dropOffTime + ",";
-        for (Route route : this.routes){
-            result += route.toString();
-        }
-        return result;
     }
 
     public long getPickUpTime() {
@@ -51,11 +45,27 @@ public class TopRoutesEvent {
         this.dropOffTime = dropOffTime;
     }
 
-    public List<Route> getRoutes() {
-        return routes;
+    public long getStartTime() {
+        return startTime;
     }
 
-    public void setRoutes(List<Route> routes) {
-        this.routes = routes;
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public Set<Route> getRemovedRoutes() {
+        return removedRoutes;
+    }
+
+    public void setRemovedRoutes(Set<Route> removedRoutes) {
+        this.removedRoutes = removedRoutes;
+    }
+
+    public List<NodeValue> getNewRoutes() {
+        return newRoutes;
+    }
+
+    public void setNewRoutes(List<NodeValue> newRoutes) {
+        this.newRoutes = newRoutes;
     }
 }

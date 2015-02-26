@@ -23,17 +23,20 @@ import java.text.SimpleDateFormat;
 public class RouteEventEmitter {
 
 
-    private RouteProcessor eventDataProcessor;
-
-    public RouteEventEmitter() {
-        this.eventDataProcessor = new RouteProcessor();
-    }
-
-
     private void loadData() {
 
         String fileName = "data/sorted_data.csv";
         try {
+
+            int numberOfBuffers = 1;
+            //initialize buffers
+            TopRouteProcessor topRouteProcessor = new TopRouteProcessor();
+            MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
+            for (int i = 0; i < messageBuffers.length; i++) {
+                 messageBuffers[i] = new MessageBuffer(topRouteProcessor);
+            }
+
+            long currentTime = System.currentTimeMillis();
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
             String line;
 
@@ -51,7 +54,9 @@ public class RouteEventEmitter {
                     route.setPickUpCell(getCell(Double.parseDouble(values[6]), Double.parseDouble(values[7])));
                     route.setDropOffCell(getCell(Double.parseDouble(values[8]), Double.parseDouble(values[9])));
                     dropOffEvent.setRoute(route);
-                    this.eventDataProcessor.processEvent(dropOffEvent);
+                    int bufferNumber = route.hashCode() % numberOfBuffers;
+                    messageBuffers[bufferNumber].addMessage(dropOffEvent);
+//                    this.eventDataProcessor.processEvent(dropOffEvent);
 
                 } catch (ParseException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -60,7 +65,20 @@ public class RouteEventEmitter {
                 }
             }
 
-            this.eventDataProcessor.close();
+            // finish all buffers
+            for (int i = 0; i < messageBuffers.length; i++) {
+                messageBuffers[i].setFinish();
+            }
+
+            System.out.println("Total time (ms) " + (System.currentTimeMillis() - currentTime));
+
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            topRouteProcessor.close();
+
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
