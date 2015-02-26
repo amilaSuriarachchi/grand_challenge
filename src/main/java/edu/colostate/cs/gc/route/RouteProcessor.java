@@ -79,8 +79,8 @@ public class RouteProcessor {
 
         List<NodeValue> currentList = this.topMap.getTopValues();
         if (!Util.isSame(preList, currentList) && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
-//            Set<Route> currentRoutSet = getRouteSet(currentList);
-//            this.lastRouteSet.removeAll(currentRoutSet);
+            Set<Route> currentRoutSet = getRouteSet(currentList);
+            this.lastRouteSet.removeAll(currentRoutSet);
             generateRouteChangeEvent(event.getStartTime(), event.getPickUpTime(),
                     event.getDropOffTime(), this.lastRouteSet, currentList);
             this.lastRouteSet = getRouteSet(currentList);

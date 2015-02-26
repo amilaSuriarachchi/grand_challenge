@@ -28,7 +28,7 @@ public class RouteEventEmitter {
         String fileName = "data/sorted_data.csv";
         try {
 
-            int numberOfBuffers = 4;
+            int numberOfBuffers = 1;
             //initialize buffers
             TopRouteProcessor topRouteProcessor = new TopRouteProcessor();
             MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];

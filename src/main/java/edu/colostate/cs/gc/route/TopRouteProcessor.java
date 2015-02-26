@@ -55,7 +55,7 @@ public class TopRouteProcessor {
         for (NodeValue nodeValue : event.getNewRoutes()) {
             routeCount = (RouteCount) nodeValue;
             if (!this.topMap.containsKey(routeCount.getRoute())) {
-                // need to create a new object to avoid conflits with earlier process objects.
+                // need to create a new object to avoid conflicts with earlier process objects.
                 isChanged = this.topMap.add(routeCount.getRoute(),
                         new RouteCount(routeCount.getCount(), routeCount.getRoute())) || isChanged;
                 isChanged = this.topMap.decrementPosition(routeCount.getRoute()) || isChanged;
