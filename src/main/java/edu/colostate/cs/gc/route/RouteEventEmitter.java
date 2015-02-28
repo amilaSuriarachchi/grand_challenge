@@ -36,12 +36,11 @@ public class RouteEventEmitter {
                  messageBuffers[i] = new MessageBuffer(topRouteProcessor);
             }
 
-            long currentTime = System.currentTimeMillis();
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
             String line;
-
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+            long currentTime = System.currentTimeMillis();
             while ((line = bufferedReader.readLine()) != null) {
                 String[] values = line.split(",");
                 try {

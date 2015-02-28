@@ -2,9 +2,10 @@ package edu.colostate.cs.gc.profit;
 
 import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.event.PaymentEvent;
+import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.list.OrderedList;
 import edu.colostate.cs.gc.util.Constants;
+import edu.colostate.cs.gc.util.Util;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -23,7 +24,7 @@ public class ProfitCalculator {
 
     private Queue<PaymentEvent> paymentWindow = new LinkedList<PaymentEvent>();
     private Queue<PaymentEvent> dropWindow = new LinkedList<PaymentEvent>();
-    private OrderedList orderedList = new OrderedList();
+    private NodeList nodeList = new NodeList();
 
     private long startTime;
     private boolean isStarted;
@@ -46,18 +47,18 @@ public class ProfitCalculator {
             this.startTime = event.getDropOffTime();
         }
 
-        boolean isChanged = false;
+        List<NodeValue> preList = nodeList.getTopValues();
         if (event.isPayEvent()) {
             this.paymentWindow.add(event);
             Cell pickUpNode = event.getPickUpCell();
-            if (!this.orderedList.containsKey(pickUpNode)) {
-                // if there is no entry in the orderedList then any taxi drop has not been arrived at this position. So
+            if (!this.nodeList.containsKey(pickUpNode)) {
+                // if there is no entry in the nodeList then any taxi drop has not been arrived at this position. So
                 // no need to reduce the empty taxis
                 ProfitCellNode profitCellNode = new ProfitCellNode(event.getFare(), pickUpNode);
                 //this node does not have a profitability so it won't make any change to top nodes.
-                this.orderedList.add(pickUpNode, profitCellNode);
+                this.nodeList.add(pickUpNode, profitCellNode);
             } else {
-                ProfitCellNode profitCellNode = (ProfitCellNode) this.orderedList.get(pickUpNode);
+                ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(pickUpNode);
                 double preProfitability = profitCellNode.getProfitability();
                 profitCellNode.addFare(event.getFare());
 
@@ -68,9 +69,9 @@ public class ProfitCalculator {
                 }
 
                 if (preProfitability > profitCellNode.getProfitability()) {
-                    isChanged = this.orderedList.incrementPosition(pickUpNode) || isChanged;
+                    this.nodeList.incrementPosition(pickUpNode);
                 } else {
-                    isChanged = this.orderedList.decrementPosition(pickUpNode) || isChanged;
+                    this.nodeList.decrementPosition(pickUpNode);
                 }
 
             }
@@ -78,16 +79,16 @@ public class ProfitCalculator {
             while ((this.paymentWindow.size() > 0) &&
                     (this.paymentWindow.peek().isExpired(event.getDropOffTime(), Constants.SMALL_WINDOW_SIZE))) {
                 PaymentEvent paymentEvent = this.paymentWindow.poll();
-                ProfitCellNode profitCellNode = (ProfitCellNode) this.orderedList.get(paymentEvent.getPickUpCell());
+                ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(paymentEvent.getPickUpCell());
                 double preProfitability = profitCellNode.getProfitability();
                 profitCellNode.removeFare(paymentEvent.getFare());
                 if (profitCellNode.isEmpty()) {
-                    this.orderedList.remove(paymentEvent.getPickUpCell());
+                    this.nodeList.remove(paymentEvent.getPickUpCell());
                 } else {
                     if (preProfitability > profitCellNode.getProfitability()) {
-                        isChanged = this.orderedList.incrementPosition(paymentEvent.getPickUpCell()) || isChanged;
+                        this.nodeList.incrementPosition(paymentEvent.getPickUpCell());
                     } else {
-                        isChanged = this.orderedList.decrementPosition(paymentEvent.getPickUpCell()) || isChanged;
+                        this.nodeList.decrementPosition(paymentEvent.getPickUpCell());
                     }
 
                 }
@@ -98,27 +99,27 @@ public class ProfitCalculator {
 
             Cell dropOffNode = event.getDropOffCell();
 
-            if (!this.orderedList.containsKey(dropOffNode)) {
+            if (!this.nodeList.containsKey(dropOffNode)) {
                 ProfitCellNode profitCellNode = new ProfitCellNode(dropOffNode);
                 profitCellNode.addTaxi(event.getMedallion());
-                isChanged = this.orderedList.add(dropOffNode, profitCellNode) || isChanged;
+                this.nodeList.add(dropOffNode, profitCellNode);
                 // we need to decrement the position since it added as last node and there can be -1 profitability nodes
-                isChanged = this.orderedList.decrementPosition(dropOffNode) || isChanged;
+                this.nodeList.decrementPosition(dropOffNode);
             } else {
-                ProfitCellNode profitCellNode = (ProfitCellNode) this.orderedList.get(dropOffNode);
+                ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(dropOffNode);
                 profitCellNode.addTaxi(event.getMedallion());
                 profitCellNode.increaseEmptyTaxi();
-                isChanged = this.orderedList.incrementPosition(dropOffNode) || isChanged;
+                this.nodeList.incrementPosition(dropOffNode);
             }
 
             while ((this.dropWindow.size() > 0)
                     && (this.dropWindow.peek().isExpired(event.getDropOffTime(), Constants.LARGE_WINDOW_SIZE))) {
                 PaymentEvent paymentEvent = this.dropWindow.poll();
 
-                if (this.orderedList.containsKey(paymentEvent.getDropOffCell())) {
+                if (this.nodeList.containsKey(paymentEvent.getDropOffCell())) {
                     //this cell may have been removed by earlier processing of dropping event due to taxi leaving.
                     //or by payment reduction due to same reasoning.
-                    ProfitCellNode profitCellNode = (ProfitCellNode) this.orderedList.get(paymentEvent.getDropOffCell());
+                    ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(paymentEvent.getDropOffCell());
 
                     if (profitCellNode.containsTaxi(paymentEvent.getMedallion())) {
                         // there is a possibility that the taxi for this drop event already has gone and received a
@@ -127,9 +128,9 @@ public class ProfitCalculator {
                         profitCellNode.removeTaxi(paymentEvent.getMedallion());
 
                         if (profitCellNode.isEmpty()) {
-                            this.orderedList.remove(paymentEvent.getDropOffCell());
+                            this.nodeList.remove(paymentEvent.getDropOffCell());
                         } else {
-                            isChanged = this.orderedList.decrementPosition(paymentEvent.getDropOffCell()) || isChanged;
+                            this.nodeList.decrementPosition(paymentEvent.getDropOffCell());
                         }
 
                     }
@@ -137,9 +138,10 @@ public class ProfitCalculator {
             }
         }
 
-        if (isChanged && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+        List<NodeValue> currentList = this.nodeList.getTopValues();
+        if (!Util.isSame(preList, currentList) && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
             generateProfitChangeEvent(event.getStartTime(), event.getPickUpTime(),
-                                            event.getDropOffTime(), this.orderedList.getTopValues());
+                    event.getDropOffTime(), this.nodeList.getTopValues());
         }
 
     }

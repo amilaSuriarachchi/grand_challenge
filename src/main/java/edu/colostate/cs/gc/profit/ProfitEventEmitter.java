@@ -36,6 +36,8 @@ public class ProfitEventEmitter {
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+            long currentTime = System.currentTimeMillis();
+
             while ((line = bufferedReader.readLine()) != null) {
                 String[] values = line.split(",");
                 try {
@@ -59,6 +61,7 @@ public class ProfitEventEmitter {
                 }
             }
 
+            System.out.println("Total time (ms) " + (System.currentTimeMillis() - currentTime));
             this.profitCalculator.close();
 
         } catch (FileNotFoundException e) {

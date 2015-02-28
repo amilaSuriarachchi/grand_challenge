@@ -32,24 +32,18 @@ public class OrderedList {
      * @param value
      * @return - true if this node within first 10 nodes.
      */
-    public boolean add(Object key, NodeValue value) {
-        boolean isChanged = false;
+    public void add(Object key, NodeValue value) {
         if (this.tail == null) {
             this.tail = new ListNode(0, value, key);
             this.head = this.tail;
             this.keyMap.put(key, this.tail);
-            isChanged = true;
         } else {
             ListNode listNode = new ListNode(this.tail.getPosition() + 1, value, key);
             listNode.setPreNode(this.tail);
             this.tail.setNextNode(listNode);
             this.keyMap.put(key, listNode);
             this.tail = listNode;
-            if (this.tail.getPosition() < HEAD_SIZE) {
-                isChanged = true;
-            }
         }
-        return isChanged;
     }
 
     /**
@@ -106,10 +100,9 @@ public class OrderedList {
      * @param key
      * @return - true if position changed and it was within top 10
      */
-    public boolean incrementPosition(Object key) {
+    public void incrementPosition(Object key) {
 
         ListNode listNode = this.keyMap.get(key);
-        int prePosition = listNode.getPosition();
         if ((listNode == this.head) &&
                 (listNode.getNextNode() != null) &&
                 (listNode.compare(listNode.getNextNode()) == -1)) {
@@ -119,8 +112,6 @@ public class OrderedList {
 
         this.tail = listNode.incrementPosition(this.tail);
         this.head.setPreNode(null);
-        int currentPosition = listNode.getPosition();
-        return (prePosition != currentPosition) && (prePosition < HEAD_SIZE);
 
     }
 
@@ -130,20 +121,15 @@ public class OrderedList {
      * @param key
      * @return - true if position get changed and it is within top 10
      */
-    public boolean decrementPosition(Object key) {
+    public void decrementPosition(Object key) {
         ListNode listNode = this.keyMap.get(key);
-        int prePosition = listNode.getPosition();
-
         if ((listNode == this.tail) &&
                 (listNode.getPreNode() != null) &&
                 (listNode.compare(listNode.getPreNode()) == 1)) {
             this.tail = listNode.getPreNode();
         }
-
         this.head = listNode.decrementPosition(this.head);
         this.tail.setNextNode(null);
-        int currentPosition = listNode.getPosition();
-        return (prePosition != currentPosition) && (currentPosition < HEAD_SIZE);
     }
 
     public List<NodeValue> getTopValues() {
