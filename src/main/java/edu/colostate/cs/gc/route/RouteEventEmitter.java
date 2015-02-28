@@ -4,13 +4,13 @@ import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.event.DropOffEvent;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.exception.OutlierPointException;
+import edu.colostate.cs.gc.process.MessageBuffer;
 import edu.colostate.cs.gc.util.Constants;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 /**
@@ -27,13 +27,13 @@ public class RouteEventEmitter {
 
         String fileName = "data/sorted_data.csv";
         try {
-
+            int errorLines = 0;
             int numberOfBuffers = 4;
             //initialize buffers
             TopRouteProcessor topRouteProcessor = new TopRouteProcessor();
             MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
             for (int i = 0; i < messageBuffers.length; i++) {
-                 messageBuffers[i] = new MessageBuffer(topRouteProcessor);
+                 messageBuffers[i] = new MessageBuffer(new RouteProcessor(topRouteProcessor));
             }
 
             String line;
@@ -57,10 +57,10 @@ public class RouteEventEmitter {
                     messageBuffers[bufferNumber].addMessage(dropOffEvent);
 //                    this.eventDataProcessor.processEvent(dropOffEvent);
 
-                } catch (ParseException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 } catch (OutlierPointException e) {
-//                    System.out.println(e.getMessage());
+
+                } catch (Exception e) {
+                    errorLines++;
                 }
             }
 
@@ -70,6 +70,7 @@ public class RouteEventEmitter {
             }
 
             System.out.println("Total time (ms) " + (System.currentTimeMillis() - currentTime));
+            System.out.println("Total error lines " + errorLines);
 
             try {
                 Thread.sleep(10000);

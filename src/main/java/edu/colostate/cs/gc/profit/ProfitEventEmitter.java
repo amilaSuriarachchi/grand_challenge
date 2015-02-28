@@ -3,6 +3,9 @@ package edu.colostate.cs.gc.profit;
 import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.event.PaymentEvent;
 import edu.colostate.cs.gc.exception.OutlierPointException;
+import edu.colostate.cs.gc.process.MessageBuffer;
+import edu.colostate.cs.gc.route.RouteProcessor;
+import edu.colostate.cs.gc.route.TopRouteProcessor;
 import edu.colostate.cs.gc.util.Constants;
 
 import java.io.BufferedReader;
@@ -21,16 +24,22 @@ import java.text.SimpleDateFormat;
  */
 public class ProfitEventEmitter {
 
-    private ProfitCalculator profitCalculator;
 
     public ProfitEventEmitter() {
-        this.profitCalculator = new ProfitCalculator();
     }
 
     private void loadData() {
 
         String fileName = "data/sorted_data.csv";
         try {
+
+            int numberOfBuffers = 1;
+            //initialize buffers
+            MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
+            for (int i = 0; i < messageBuffers.length; i++) {
+                messageBuffers[i] = new MessageBuffer(new ProfitCalculator());
+            }
+
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
             String line;
 
@@ -41,28 +50,42 @@ public class ProfitEventEmitter {
             while ((line = bufferedReader.readLine()) != null) {
                 String[] values = line.split(",");
                 try {
-                    PaymentEvent paymentEvent = new PaymentEvent();
-                    paymentEvent.setStartTime(System.currentTimeMillis());
-                    paymentEvent.setMedallion(values[0].trim());
-                    paymentEvent.setPickUpTime(dateFormat.parse(values[2]).getTime());
-                    paymentEvent.setDropOffTime(dateFormat.parse(values[3]).getTime());
-                    paymentEvent.setPickUpCell(getCell(Double.parseDouble(values[6]), Double.parseDouble(values[7])));
-                    paymentEvent.setDropOffCell(getCell(Double.parseDouble(values[8]), Double.parseDouble(values[9])));
-                    paymentEvent.setFare(Double.parseDouble(values[11]) + Double.parseDouble(values[14]));
-                    paymentEvent.setPayEvent(true);
-                    this.profitCalculator.processEvent(paymentEvent);
-                    paymentEvent.setPayEvent(false);
-                    this.profitCalculator.processEvent(paymentEvent);
+                    PaymentEvent pickUpEvent = new PaymentEvent();
+                    pickUpEvent.setStartTime(System.currentTimeMillis());
+                    pickUpEvent.setMedallion(values[0].trim());
+                    pickUpEvent.setPickUpTime(dateFormat.parse(values[2]).getTime());
+                    pickUpEvent.setDropOffTime(dateFormat.parse(values[3]).getTime());
+                    pickUpEvent.setPickUpCell(getCell(Double.parseDouble(values[6]), Double.parseDouble(values[7])));
+                    pickUpEvent.setDropOffCell(getCell(Double.parseDouble(values[8]), Double.parseDouble(values[9])));
+                    pickUpEvent.setFare(Double.parseDouble(values[11]) + Double.parseDouble(values[14]));
+                    pickUpEvent.setPayEvent(true);
+                    int bufferNumber = pickUpEvent.getPickUpCell().hashCode() % numberOfBuffers;
+                    messageBuffers[bufferNumber].addMessage(pickUpEvent);
+
+                    PaymentEvent dropOffEvent = new PaymentEvent();
+                    dropOffEvent.setStartTime(System.currentTimeMillis());
+                    dropOffEvent.setMedallion(pickUpEvent.getMedallion());
+                    dropOffEvent.setPickUpTime(pickUpEvent.getPickUpTime());
+                    dropOffEvent.setDropOffTime(pickUpEvent.getDropOffTime());
+                    dropOffEvent.setPickUpCell(pickUpEvent.getPickUpCell());
+                    dropOffEvent.setDropOffCell(pickUpEvent.getDropOffCell());
+                    dropOffEvent.setFare(pickUpEvent.getFare());
+                    dropOffEvent.setPayEvent(false);
+
+                    bufferNumber = dropOffEvent.getDropOffCell().hashCode() % numberOfBuffers;
+                    messageBuffers[bufferNumber].addMessage(dropOffEvent);
 
                 } catch (ParseException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 } catch (OutlierPointException e) {
-//                    System.out.println(e.getMessage());
                 }
             }
 
+            for (int i = 0; i < messageBuffers.length; i++) {
+                messageBuffers[i].setFinish();
+            }
+
             System.out.println("Total time (ms) " + (System.currentTimeMillis() - currentTime));
-            this.profitCalculator.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -86,6 +109,6 @@ public class ProfitEventEmitter {
     }
 
     public static void main(String[] args) {
-         new ProfitEventEmitter().loadData();
+        new ProfitEventEmitter().loadData();
     }
 }

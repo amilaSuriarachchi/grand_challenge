@@ -14,7 +14,7 @@ import java.util.Set;
  * Time: 5:53 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TopRoutesEvent {
+public class TopRoutesEvent extends Event {
 
     private long startTime;
     private long pickUpTime;

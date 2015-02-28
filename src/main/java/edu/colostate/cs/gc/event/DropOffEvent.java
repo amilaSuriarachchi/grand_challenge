@@ -9,7 +9,7 @@ import edu.colostate.cs.gc.util.Constants;
  * Time: 3:44 PM
  * To change this template use File | Settings | File Templates.
  */
-public class DropOffEvent {
+public class DropOffEvent extends Event {
 
     private long pickUpTime;
     private long dropOffTime;

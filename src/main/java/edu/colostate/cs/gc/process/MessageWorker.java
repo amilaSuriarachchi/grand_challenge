@@ -1,6 +1,6 @@
-package edu.colostate.cs.gc.route;
+package edu.colostate.cs.gc.process;
 
-import edu.colostate.cs.gc.event.DropOffEvent;
+import edu.colostate.cs.gc.event.Event;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -16,18 +16,18 @@ public class MessageWorker implements Runnable {
 
     public static final int MAX_SIZE = 1000;
 
-    private Queue<DropOffEvent> messages;
+    private Queue<Event> messages;
     private boolean isFinished;
 
-    private RouteProcessor routeProcessor;
+    private Processor processor;
 
-    public MessageWorker(TopRouteProcessor topRouteProcessor) {
-        this.messages = new LinkedList<DropOffEvent>();
+    public MessageWorker(Processor processor) {
+        this.messages = new LinkedList<Event>();
         this.isFinished = false;
-        this.routeProcessor = new RouteProcessor(topRouteProcessor);
+        this.processor = processor;
     }
 
-    public synchronized void addEvents(DropOffEvent[] events) {
+    public synchronized void addEvents(Event[] events) {
         if (this.messages.size() >= MAX_SIZE) {
             try {
                 this.wait();
@@ -35,7 +35,7 @@ public class MessageWorker implements Runnable {
             }
             addEvents(events);
         } else {
-            for (DropOffEvent record : events) {
+            for (Event record : events) {
                 this.messages.add(record);
             }
             this.notify();
@@ -43,9 +43,9 @@ public class MessageWorker implements Runnable {
 
     }
 
-    public synchronized DropOffEvent getEvent() {
+    public synchronized Event getEvent() {
 
-        DropOffEvent event = this.messages.poll();
+        Event event = this.messages.poll();
         while ((event == null) && !this.isFinished) {
             try {
                 this.wait();
@@ -65,12 +65,12 @@ public class MessageWorker implements Runnable {
 
 
     public void run() {
-        DropOffEvent event = null;
+        Event event = null;
         // record will be thread executions is over.
         while ((event = getEvent()) != null) {
-            this.routeProcessor.processEvent(event);
+            this.processor.processEvent(event);
         }
 
-        this.routeProcessor.close();
+        this.processor.close();
     }
 }

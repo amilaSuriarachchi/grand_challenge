@@ -1,9 +1,11 @@
 package edu.colostate.cs.gc.route;
 
+import edu.colostate.cs.gc.event.Event;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
 import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
+import edu.colostate.cs.gc.process.Processor;
 import edu.colostate.cs.gc.util.Util;
 
 import java.io.BufferedWriter;
@@ -20,7 +22,7 @@ import java.util.List;
  * Time: 11:53 AM
  * To change this template use File | Settings | File Templates.
  */
-public class TopRouteProcessor {
+public class TopRouteProcessor extends Processor {
 
     private NodeList nodeList;
 
@@ -42,19 +44,20 @@ public class TopRouteProcessor {
 
     }
 
-    public synchronized void processEvent(TopRoutesEvent event) {
+    public synchronized void processEvent(Event event) {
 
+        TopRoutesEvent topRoutesEvent = (TopRoutesEvent) event;
         // remove old routes
         RouteCount routeCount = null;
 
         List<NodeValue> preList = this.nodeList.getTopValues();
 
-        for (Route route : event.getRemovedRoutes()) {
+        for (Route route : topRoutesEvent.getRemovedRoutes()) {
             this.nodeList.remove(route);
         }
 
         // add new values
-        for (NodeValue nodeValue : event.getNewRoutes()) {
+        for (NodeValue nodeValue : topRoutesEvent.getNewRoutes()) {
             routeCount = (RouteCount) nodeValue;
             if (!this.nodeList.containsKey(routeCount.getRoute())) {
                 // need to create a new object to avoid conflicts with earlier process objects.
@@ -78,8 +81,8 @@ public class TopRouteProcessor {
         this.eventReceived++;
 
         if (!Util.isSame(preList, this.nodeList.getTopValues())) {
-            generateRouteChangeEvent(event.getStartTime(),
-                    event.getPickUpTime(), event.getDropOffTime(), nodeList.getTopValues());
+            generateRouteChangeEvent(topRoutesEvent.getStartTime(),
+                    topRoutesEvent.getPickUpTime(), topRoutesEvent.getDropOffTime(), nodeList.getTopValues());
 
         }
     }

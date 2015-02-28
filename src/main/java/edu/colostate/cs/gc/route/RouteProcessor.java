@@ -1,10 +1,12 @@
 package edu.colostate.cs.gc.route;
 
 import edu.colostate.cs.gc.event.DropOffEvent;
+import edu.colostate.cs.gc.event.Event;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
 import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
+import edu.colostate.cs.gc.process.Processor;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
 
@@ -17,7 +19,7 @@ import java.util.*;
  * Time: 3:36 PM
  * To change this template use File | Settings | File Templates.
  */
-public class RouteProcessor {
+public class RouteProcessor extends Processor {
 
     private Queue<DropOffEvent> window = new LinkedList<DropOffEvent>();
 
@@ -37,29 +39,31 @@ public class RouteProcessor {
         this.lastRouteSet = new HashSet<Route>();
     }
 
-    public void processEvent(DropOffEvent event) {
+    public void processEvent(Event event) {
+
+        DropOffEvent dropOffEvent = (DropOffEvent) event;
 
         if (!this.isStarted) {
             this.isStarted = true;
-            this.startTime = event.getDropOffTime();
+            this.startTime = dropOffEvent.getDropOffTime();
         }
 
         List<NodeValue> preList = nodeList.getTopValues();
 
-        this.window.add(event);
+        this.window.add(dropOffEvent);
         // whether the current top ten events get changed.
-        if (!this.nodeList.containsKey(event.getRoute())) {
-            this.nodeList.add(event.getRoute(), new RouteCount(1, event.getRoute(), event.getDropOffTime()));
+        if (!this.nodeList.containsKey(dropOffEvent.getRoute())) {
+            this.nodeList.add(dropOffEvent.getRoute(), new RouteCount(1, dropOffEvent.getRoute(), dropOffEvent.getDropOffTime()));
         } else {
-            RouteCount routeCount = (RouteCount) this.nodeList.get(event.getRoute());
+            RouteCount routeCount = (RouteCount) this.nodeList.get(dropOffEvent.getRoute());
             routeCount.incrementCount();
-            routeCount.setUpdatedTime(event.getDropOffTime());
+            routeCount.setUpdatedTime(dropOffEvent.getDropOffTime());
             // after increasing the count we need to move this element towards the head. i.e reduce position.
-            this.nodeList.decrementPosition(event.getRoute());
+            this.nodeList.decrementPosition(dropOffEvent.getRoute());
         }
 
         // pull out expired events
-        while (!this.window.isEmpty() && this.window.peek().isExpired(event.getDropOffTime())) {
+        while (!this.window.isEmpty() && this.window.peek().isExpired(dropOffEvent.getDropOffTime())) {
             DropOffEvent expiredEvent = this.window.poll();
             RouteCount routeCount = (RouteCount) this.nodeList.get(expiredEvent.getRoute());
             routeCount.decrementCount();
@@ -71,11 +75,11 @@ public class RouteProcessor {
         }
 
         List<NodeValue> currentList = this.nodeList.getTopValues();
-        if (!Util.isSame(preList, currentList) && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+        if (!Util.isSame(preList, currentList) && (dropOffEvent.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
             Set<Route> currentRoutSet = getRouteSet(currentList);
             this.lastRouteSet.removeAll(currentRoutSet);
-            generateRouteChangeEvent(event.getStartTime(), event.getPickUpTime(),
-                    event.getDropOffTime(), this.lastRouteSet, currentList);
+            generateRouteChangeEvent(dropOffEvent.getStartTime(), dropOffEvent.getPickUpTime(),
+                    dropOffEvent.getDropOffTime(), this.lastRouteSet, currentList);
             this.lastRouteSet = getRouteSet(currentList);
 
         }

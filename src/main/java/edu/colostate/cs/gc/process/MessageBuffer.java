@@ -1,6 +1,6 @@
-package edu.colostate.cs.gc.route;
+package edu.colostate.cs.gc.process;
 
-import edu.colostate.cs.gc.event.DropOffEvent;
+import edu.colostate.cs.gc.event.Event;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,26 +11,26 @@ import edu.colostate.cs.gc.event.DropOffEvent;
  */
 public class MessageBuffer {
 
-    public static final int MAX_BUFFER_SIZE = 500;
+    public static final int MAX_BUFFER_SIZE = 10;
 
     private MessageWorker messageWorker;
-    private DropOffEvent[] buffer;
+    private Event[] buffer;
     private int bufferCount;
 
-    public MessageBuffer(TopRouteProcessor topRouteProcessor) {
+    public MessageBuffer(Processor processor) {
 
-        this.messageWorker = new MessageWorker(topRouteProcessor);
+        this.messageWorker = new MessageWorker(processor);
         Thread thread = new Thread(this.messageWorker);
         thread.start();
 
-        this.buffer = new DropOffEvent[MAX_BUFFER_SIZE];
+        this.buffer = new Event[MAX_BUFFER_SIZE];
         this.bufferCount = 0;
 
     }
 
-    public void addMessage(DropOffEvent dropOffEvent){
+    public void addMessage(Event event){
 
-        this.buffer[this.bufferCount] = dropOffEvent;
+        this.buffer[this.bufferCount] = event;
         this.bufferCount++;
         if (this.bufferCount == MAX_BUFFER_SIZE){
             this.messageWorker.addEvents(this.buffer);

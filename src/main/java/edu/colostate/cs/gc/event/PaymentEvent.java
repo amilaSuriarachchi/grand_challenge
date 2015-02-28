@@ -9,7 +9,7 @@ import edu.colostate.cs.gc.util.Constants;
  * Time: 11:38 AM
  * To change this template use File | Settings | File Templates.
  */
-public class PaymentEvent {
+public class PaymentEvent extends Event {
 
     private String medallion;
     private double fare;
