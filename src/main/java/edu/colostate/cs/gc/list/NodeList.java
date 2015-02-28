@@ -23,8 +23,8 @@ public class NodeList {
         return this.heap.containsKey(key) || this.list.containsKey(key);
     }
 
-    public NodeValue getNodeValue(Object key){
-        if (this.heap.containsKey(key)){
+    public NodeValue get(Object key) {
+        if (this.heap.containsKey(key)) {
             return this.heap.get(key);
         } else {
             return this.list.get(key);
@@ -75,10 +75,11 @@ public class NodeList {
      */
     public void decrementPosition(Object key) {
         if (this.heap.containsKey(key)) {
+            // if there is an object in the heap list must be full and hence tail can not be null.
             Object tailKey = this.list.getTailKey();
             NodeValue tailNode = this.list.get(tailKey);
             NodeValue node = this.heap.get(key);
-            if (node.compare(tailNode) == 1){
+            if (node.compare(tailNode) == 1) {
                 // i.e current node is greater than the tail.
                 // so remove the tail and put that to heap.
                 // remove this node and put that to list.
@@ -102,48 +103,55 @@ public class NodeList {
     /**
      * user of this class ask to increase the position. i.e the value of this node has decreased.
      * this means we need to increment position in the list or move down in the heap.
+     *
      * @param key
      */
-    public void incrementPosition(Object key){
-          if (this.heap.containsKey(key)){
-              this.heap.moveDown(key);
-          } else {
-              Object maxHeapKey = this.heap.getMaxKey();
-              NodeValue maxHeapNode = this.heap.get(maxHeapKey);
-              NodeValue node = this.list.get(key);
-              if (maxHeapNode.compare(node) == 1){
-                  // i.e current max heap is greater than this node.
-                  NodeValue heapNode = this.heap.remove(maxHeapKey);
-                  NodeValue nodeValue = this.list.remove(key);
-                  this.heap.add(key, nodeValue);
-                  this.list.add(maxHeapKey, heapNode);
-                  // this node should be less than existing values. so no need to decrement.
-              } else {
-                  this.list.incrementPosition(key);
-              }
-          }
+    public void incrementPosition(Object key) {
+        if (this.heap.containsKey(key)) {
+            this.heap.moveDown(key);
+        } else {
+            Object maxHeapKey = this.heap.getMaxKey();
+            if (maxHeapKey != null) {
+                NodeValue maxHeapNode = this.heap.get(maxHeapKey);
+                NodeValue node = this.list.get(key);
+                if (maxHeapNode.compare(node) == 1) {
+                    // i.e current max heap is greater than this node.
+                    NodeValue heapNode = this.heap.remove(maxHeapKey);
+                    NodeValue nodeValue = this.list.remove(key);
+                    this.heap.add(key, nodeValue);
+                    this.list.add(maxHeapKey, heapNode);
+                    // this node should be less than existing values. so no need to decrement.
+                } else {
+                    this.list.incrementPosition(key);
+                }
+            } else {
+                // if no elements in the heap just increment the list element
+                this.list.incrementPosition(key);
+            }
+
+        }
     }
 
-    public boolean checkConsistency(){
-        if (!this.list.checkListConsistency()){
+    public boolean checkConsistency() {
+        if (!this.list.checkListConsistency()) {
             return false;
         }
 
-        if (!this.heap.checkHeap()){
+        if (!this.heap.checkHeap()) {
             return false;
         }
 
         Object tailKey = this.list.getTailKey();
-        if (tailKey != null){
+        if (tailKey != null) {
             Object heapKey = this.heap.getMaxKey();
-            if (heapKey != null){
+            if (heapKey != null) {
                 return (this.list.get(tailKey).compare(this.heap.get(heapKey)) != -1);
             }
         }
         return true;
     }
 
-    public List<NodeValue> getTopValues(){
+    public List<NodeValue> getTopValues() {
         return this.list.getTopValues();
     }
 }

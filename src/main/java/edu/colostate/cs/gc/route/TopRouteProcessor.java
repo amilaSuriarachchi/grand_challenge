@@ -2,8 +2,8 @@ package edu.colostate.cs.gc.route;
 
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
+import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.list.OrderedList;
 import edu.colostate.cs.gc.util.Util;
 
 import java.io.BufferedWriter;
@@ -22,15 +22,18 @@ import java.util.List;
  */
 public class TopRouteProcessor {
 
-    private OrderedList orderedList;
+    private NodeList nodeList;
 
     private BufferedWriter eventWriter;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private int eventReceived = 0;
 
+    private double avgDelay = 0;
+    private int numOfEvents = 0;
+
     public TopRouteProcessor() {
-        this.orderedList = new OrderedList();
+        this.nodeList = new NodeList();
         try {
             this.eventWriter = new BufferedWriter(new FileWriter("data/top_routs.txt"));
         } catch (IOException e) {
@@ -43,48 +46,50 @@ public class TopRouteProcessor {
 
         // remove old routes
         RouteCount routeCount = null;
-        boolean isChanged = false;
 
-        List<NodeValue> preList = this.orderedList.getTopValues();
+        List<NodeValue> preList = this.nodeList.getTopValues();
 
         for (Route route : event.getRemovedRoutes()) {
-            this.orderedList.remove(route);
+            this.nodeList.remove(route);
         }
 
         // add new values
         for (NodeValue nodeValue : event.getNewRoutes()) {
             routeCount = (RouteCount) nodeValue;
-            if (!this.orderedList.containsKey(routeCount.getRoute())) {
+            if (!this.nodeList.containsKey(routeCount.getRoute())) {
                 // need to create a new object to avoid conflicts with earlier process objects.
-                isChanged = this.orderedList.add(routeCount.getRoute(),
-                        new RouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getUpdatedTime())) || isChanged;
-                isChanged = this.orderedList.decrementPosition(routeCount.getRoute()) || isChanged;
+                this.nodeList.add(routeCount.getRoute(),
+                        new RouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getUpdatedTime()));
             } else {
-                RouteCount existingValue = (RouteCount) this.orderedList.get(routeCount.getRoute());
+                RouteCount existingValue = (RouteCount) this.nodeList.get(routeCount.getRoute());
                 if (routeCount.getCount() < existingValue.getCount()) {
                     existingValue.setCount(routeCount.getCount());
                     existingValue.setUpdatedTime(routeCount.getUpdatedTime());
                     //if the new value is less it has to move further down.
-                    isChanged = this.orderedList.incrementPosition(routeCount.getRoute()) || isChanged;
+                    this.nodeList.incrementPosition(routeCount.getRoute());
                 } else if (routeCount.getCount() > existingValue.getCount()) {
                     existingValue.setCount(routeCount.getCount());
                     existingValue.setUpdatedTime(routeCount.getUpdatedTime());
-                    isChanged = this.orderedList.decrementPosition(routeCount.getRoute()) || isChanged;
+                    this.nodeList.decrementPosition(routeCount.getRoute());
                 }
             }
         }
 
         this.eventReceived++;
 
-        if (!Util.isSame(preList, this.orderedList.getTopValues())) {
+        if (!Util.isSame(preList, this.nodeList.getTopValues())) {
             generateRouteChangeEvent(event.getStartTime(),
-                    event.getPickUpTime(), event.getDropOffTime(), orderedList.getTopValues());
+                    event.getPickUpTime(), event.getDropOffTime(), nodeList.getTopValues());
+
         }
     }
 
     public void generateRouteChangeEvent(long startTime, long pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {
 
         try {
+            long delay = System.currentTimeMillis() - startTime;
+            this.avgDelay = (this.avgDelay * this.numOfEvents + delay) / (this.numOfEvents + 1);
+            this.numOfEvents++;
 
             this.eventWriter.write(this.simpleDateFormat.format(new Date(pickUpTime)) + ",");
             this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
@@ -92,7 +97,7 @@ public class TopRouteProcessor {
                 RouteCount routeCount = (RouteCount) nodeValue;
                 this.eventWriter.write(routeCount.getRoute().toString());
             }
-            this.eventWriter.write((System.currentTimeMillis() - startTime) + "");
+            this.eventWriter.write(delay + "");
             this.eventWriter.newLine();
 
         } catch (IOException e) {
@@ -103,7 +108,7 @@ public class TopRouteProcessor {
     public void close() {
 
         System.out.println("Event received ==> " + this.eventReceived);
-        System.out.println("Map size ==> " + orderedList.getMapSize());
+        System.out.println("Avg Delay ==> " + this.avgDelay);
         try {
             this.eventWriter.flush();
             this.eventWriter.close();

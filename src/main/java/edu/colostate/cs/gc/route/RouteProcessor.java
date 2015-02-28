@@ -3,8 +3,8 @@ package edu.colostate.cs.gc.route;
 import edu.colostate.cs.gc.event.DropOffEvent;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
+import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.list.OrderedList;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
 
@@ -21,16 +21,13 @@ public class RouteProcessor {
 
     private Queue<DropOffEvent> window = new LinkedList<DropOffEvent>();
 
-    OrderedList orderedList = new OrderedList();
+    NodeList nodeList = new NodeList();
 
     private boolean isStarted = false;
     private long startTime;
 
     private double windowAvg = 0;
     private long numOfMessages = 0;
-
-    private double mapAvg = 0;
-    private double listAvg = 0;
 
     private TopRouteProcessor topRouteProcessor;
     private Set<Route> lastRouteSet;
@@ -47,35 +44,33 @@ public class RouteProcessor {
             this.startTime = event.getDropOffTime();
         }
 
-        List<NodeValue> preList = orderedList.getTopValues();
+        List<NodeValue> preList = nodeList.getTopValues();
 
         this.window.add(event);
         // whether the current top ten events get changed.
-        boolean isChanged = false;
-        if (!this.orderedList.containsKey(event.getRoute())) {
-            isChanged = this.orderedList.add(event.getRoute(), new RouteCount(1, event.getRoute(), event.getDropOffTime()));
-            isChanged = this.orderedList.decrementPosition(event.getRoute()) || isChanged;
+        if (!this.nodeList.containsKey(event.getRoute())) {
+            this.nodeList.add(event.getRoute(), new RouteCount(1, event.getRoute(), event.getDropOffTime()));
         } else {
-            RouteCount routeCount = (RouteCount) this.orderedList.get(event.getRoute());
+            RouteCount routeCount = (RouteCount) this.nodeList.get(event.getRoute());
             routeCount.incrementCount();
             routeCount.setUpdatedTime(event.getDropOffTime());
             // after increasing the count we need to move this element towards the head. i.e reduce position.
-            isChanged = this.orderedList.decrementPosition(event.getRoute()) || isChanged;
+            this.nodeList.decrementPosition(event.getRoute());
         }
 
         // pull out expired events
         while (!this.window.isEmpty() && this.window.peek().isExpired(event.getDropOffTime())) {
             DropOffEvent expiredEvent = this.window.poll();
-            RouteCount routeCount = (RouteCount) this.orderedList.get(expiredEvent.getRoute());
+            RouteCount routeCount = (RouteCount) this.nodeList.get(expiredEvent.getRoute());
             routeCount.decrementCount();
             if (routeCount.isEmpty()) {
-                this.orderedList.remove(expiredEvent.getRoute());
+                this.nodeList.remove(expiredEvent.getRoute());
             } else {
-                isChanged = this.orderedList.incrementPosition(expiredEvent.getRoute()) || isChanged;
+                this.nodeList.incrementPosition(expiredEvent.getRoute());
             }
         }
 
-        List<NodeValue> currentList = this.orderedList.getTopValues();
+        List<NodeValue> currentList = this.nodeList.getTopValues();
         if (!Util.isSame(preList, currentList) && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
             Set<Route> currentRoutSet = getRouteSet(currentList);
             this.lastRouteSet.removeAll(currentRoutSet);
@@ -86,8 +81,6 @@ public class RouteProcessor {
         }
 
         this.windowAvg = (this.windowAvg * this.numOfMessages + this.window.size()) / (this.numOfMessages + 1);
-        this.mapAvg = (this.mapAvg * this.numOfMessages + this.orderedList.getMapSize()) / (this.numOfMessages + 1);
-        this.listAvg = (this.listAvg * this.numOfMessages + this.orderedList.getTailPosition()) / (this.numOfMessages + 1);
         this.numOfMessages++;
 
     }
@@ -115,8 +108,5 @@ public class RouteProcessor {
 
     public void close() {
         System.out.println("Average window size ==> " + this.windowAvg);
-        System.out.println("Average map size ==> " + this.mapAvg);
-        System.out.println("Average tail position size ==> " + this.listAvg);
-        this.orderedList.displayDetails();
     }
 }
