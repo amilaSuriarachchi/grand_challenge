@@ -81,8 +81,12 @@ public class TestDynamicHeap extends TestCase {
 
     public void testRemoveFromZero(){
         DynamicHeap dynamicHeap = new DynamicHeap();
-        dynamicHeap.add("route1", new CountNode(3, "route1"));
-
+        dynamicHeap.add("route1", new CountNode(13, "route1"));
+        dynamicHeap.add("route2", new CountNode(10, "route2"));
+        assertTrue(dynamicHeap.checkHeap());
+        dynamicHeap.remove("route2");
+        assertTrue(dynamicHeap.checkHeap());
         dynamicHeap.remove("route1");
+        assertTrue(dynamicHeap.checkHeap());
     }
 }

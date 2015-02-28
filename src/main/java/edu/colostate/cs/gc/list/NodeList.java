@@ -23,6 +23,14 @@ public class NodeList {
         return this.heap.containsKey(key) || this.list.containsKey(key);
     }
 
+    public NodeValue getNodeValue(Object key){
+        if (this.heap.containsKey(key)){
+            return this.heap.get(key);
+        } else {
+            return this.list.get(key);
+        }
+    }
+
     public void add(Object key, NodeValue value) {
         if (this.list.isBelongs(value)) {
             this.list.add(key, value);
@@ -110,6 +118,8 @@ public class NodeList {
                   this.heap.add(key, nodeValue);
                   this.list.add(maxHeapKey, heapNode);
                   // this node should be less than existing values. so no need to decrement.
+              } else {
+                  this.list.incrementPosition(key);
               }
           }
     }

@@ -23,7 +23,7 @@ public class DynamicHeap {
         this.heapNodes[this.heapSize] = heapNode;
         this.heapNodes[this.heapSize].setArrayPosition(this.heapSize);
         this.heapSize++;
-        moveUp(key);
+        moveUp(heapNode);
 
     }
 
@@ -37,9 +37,9 @@ public class DynamicHeap {
             this.heapNodes[currentPosition].setArrayPosition(currentPosition);
             this.heapSize--;
             if (heapNode.compare(this.heapNodes[currentPosition]) == 1) {
-                moveDown(this.heapNodes[currentPosition].getKey());
+                moveDown(this.heapNodes[currentPosition]);
             } else {
-                moveUp(this.heapNodes[currentPosition].getKey());
+                moveUp(this.heapNodes[currentPosition]);
             }
         } else {
             this.heapSize--;
@@ -64,12 +64,16 @@ public class DynamicHeap {
         this.heapNodes[0] = this.heapNodes[this.heapSize - 1];
         this.heapNodes[0].setArrayPosition(0);
         this.heapSize--;
-        moveDown(this.heapNodes[0].getKey());
+        moveDown(this.heapNodes[0]);
         return maxElement.getNodeValue();
     }
 
     public void moveUp(Object key) {
         HeapNode heapNode = this.keyMap.get(key);
+        moveUp(heapNode);
+    }
+
+    private void moveUp(HeapNode heapNode) {
         // if current position is zero it is already parent.
         int currentPosition = heapNode.getArrayPosition();
         if (currentPosition != 0) {
@@ -83,15 +87,18 @@ public class DynamicHeap {
                 this.heapNodes[parent] = heapNode;
                 this.heapNodes[parent].setArrayPosition(parent);
 
-                moveUp(heapNode.getKey());
+                moveUp(heapNode);
             }
         }
     }
 
 
     public void moveDown(Object key) {
-
         HeapNode heapNode = this.keyMap.get(key);
+        moveDown(heapNode);
+    }
+
+    private void moveDown(HeapNode heapNode) {
         int currentPosition = heapNode.getArrayPosition();
         int left = getLeft(currentPosition);
         int right = getRight(currentPosition);
@@ -115,7 +122,7 @@ public class DynamicHeap {
             this.heapNodes[largest] = heapNode;
             this.heapNodes[largest].setArrayPosition(largest);
 
-            moveDown(heapNode.getKey());
+            moveDown(heapNode);
         }
     }
 
