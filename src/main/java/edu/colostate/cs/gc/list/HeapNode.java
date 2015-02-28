@@ -1,6 +1,4 @@
-package edu.colostate.cs.gc.heap;
-
-import edu.colostate.cs.gc.list.NodeValue;
+package edu.colostate.cs.gc.list;
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,17 +7,19 @@ import edu.colostate.cs.gc.list.NodeValue;
  * Time: 12:45 PM
  * To change this template use File | Settings | File Templates.
  */
-public class HeapElement {
+public class HeapNode {
 
     private int arrayPosition;
     private NodeValue nodeValue;
+    private Object key;
 
-    public HeapElement(NodeValue nodeValue) {
+    public HeapNode(NodeValue nodeValue, Object key) {
         this.nodeValue = nodeValue;
+        this.key = key;
     }
 
-    public int compare(HeapElement heapElement){
-        return this.nodeValue.compare(heapElement.nodeValue);
+    public int compare(HeapNode heapNode){
+        return this.nodeValue.compare(heapNode.nodeValue);
     }
 
     public int getArrayPosition() {
@@ -36,5 +36,13 @@ public class HeapElement {
 
     public void setNodeValue(NodeValue nodeValue) {
         this.nodeValue = nodeValue;
+    }
+
+    public Object getKey() {
+        return key;
+    }
+
+    public void setKey(Object key) {
+        this.key = key;
     }
 }

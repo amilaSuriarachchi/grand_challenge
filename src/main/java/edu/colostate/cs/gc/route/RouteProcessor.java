@@ -4,13 +4,10 @@ import edu.colostate.cs.gc.event.DropOffEvent;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.list.TopMap;
+import edu.colostate.cs.gc.list.OrderedList;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -24,7 +21,7 @@ public class RouteProcessor {
 
     private Queue<DropOffEvent> window = new LinkedList<DropOffEvent>();
 
-    TopMap topMap = new TopMap();
+    OrderedList orderedList = new OrderedList();
 
     private boolean isStarted = false;
     private long startTime;
@@ -50,35 +47,35 @@ public class RouteProcessor {
             this.startTime = event.getDropOffTime();
         }
 
-        List<NodeValue> preList = topMap.getTopValues();
+        List<NodeValue> preList = orderedList.getTopValues();
 
         this.window.add(event);
         // whether the current top ten events get changed.
         boolean isChanged = false;
-        if (!this.topMap.containsKey(event.getRoute())) {
-            isChanged = this.topMap.add(event.getRoute(), new RouteCount(1, event.getRoute(), event.getDropOffTime()));
-            isChanged = this.topMap.decrementPosition(event.getRoute()) || isChanged;
+        if (!this.orderedList.containsKey(event.getRoute())) {
+            isChanged = this.orderedList.add(event.getRoute(), new RouteCount(1, event.getRoute(), event.getDropOffTime()));
+            isChanged = this.orderedList.decrementPosition(event.getRoute()) || isChanged;
         } else {
-            RouteCount routeCount = (RouteCount) this.topMap.get(event.getRoute());
+            RouteCount routeCount = (RouteCount) this.orderedList.get(event.getRoute());
             routeCount.incrementCount();
             routeCount.setUpdatedTime(event.getDropOffTime());
             // after increasing the count we need to move this element towards the head. i.e reduce position.
-            isChanged = this.topMap.decrementPosition(event.getRoute()) || isChanged;
+            isChanged = this.orderedList.decrementPosition(event.getRoute()) || isChanged;
         }
 
         // pull out expired events
         while (!this.window.isEmpty() && this.window.peek().isExpired(event.getDropOffTime())) {
             DropOffEvent expiredEvent = this.window.poll();
-            RouteCount routeCount = (RouteCount) this.topMap.get(expiredEvent.getRoute());
+            RouteCount routeCount = (RouteCount) this.orderedList.get(expiredEvent.getRoute());
             routeCount.decrementCount();
             if (routeCount.isEmpty()) {
-                isChanged = this.topMap.remove(expiredEvent.getRoute()) || isChanged;
+                this.orderedList.remove(expiredEvent.getRoute());
             } else {
-                isChanged = this.topMap.incrementPosition(expiredEvent.getRoute()) || isChanged;
+                isChanged = this.orderedList.incrementPosition(expiredEvent.getRoute()) || isChanged;
             }
         }
 
-        List<NodeValue> currentList = this.topMap.getTopValues();
+        List<NodeValue> currentList = this.orderedList.getTopValues();
         if (!Util.isSame(preList, currentList) && (event.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
             Set<Route> currentRoutSet = getRouteSet(currentList);
             this.lastRouteSet.removeAll(currentRoutSet);
@@ -89,8 +86,8 @@ public class RouteProcessor {
         }
 
         this.windowAvg = (this.windowAvg * this.numOfMessages + this.window.size()) / (this.numOfMessages + 1);
-        this.mapAvg = (this.mapAvg * this.numOfMessages + this.topMap.getMapSize()) / (this.numOfMessages + 1);
-        this.listAvg = (this.listAvg * this.numOfMessages + this.topMap.getTailPosition()) / (this.numOfMessages + 1);
+        this.mapAvg = (this.mapAvg * this.numOfMessages + this.orderedList.getMapSize()) / (this.numOfMessages + 1);
+        this.listAvg = (this.listAvg * this.numOfMessages + this.orderedList.getTailPosition()) / (this.numOfMessages + 1);
         this.numOfMessages++;
 
     }
@@ -120,6 +117,6 @@ public class RouteProcessor {
         System.out.println("Average window size ==> " + this.windowAvg);
         System.out.println("Average map size ==> " + this.mapAvg);
         System.out.println("Average tail position size ==> " + this.listAvg);
-        this.topMap.displayDetails();
+        this.orderedList.displayDetails();
     }
 }

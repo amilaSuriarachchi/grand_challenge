@@ -3,7 +3,7 @@ package edu.colostate.cs.gc.route;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.list.TopMap;
+import edu.colostate.cs.gc.list.OrderedList;
 import edu.colostate.cs.gc.util.Util;
 
 import java.io.BufferedWriter;
@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class TopRouteProcessor {
 
-    private TopMap topMap;
+    private OrderedList orderedList;
 
     private BufferedWriter eventWriter;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -30,7 +30,7 @@ public class TopRouteProcessor {
     private int eventReceived = 0;
 
     public TopRouteProcessor() {
-        this.topMap = new TopMap();
+        this.orderedList = new OrderedList();
         try {
             this.eventWriter = new BufferedWriter(new FileWriter("data/top_routs.txt"));
         } catch (IOException e) {
@@ -45,40 +45,40 @@ public class TopRouteProcessor {
         RouteCount routeCount = null;
         boolean isChanged = false;
 
-        List<NodeValue> preList = this.topMap.getTopValues();
+        List<NodeValue> preList = this.orderedList.getTopValues();
 
         for (Route route : event.getRemovedRoutes()) {
-            isChanged = this.topMap.remove(route) || isChanged;
+            this.orderedList.remove(route);
         }
 
         // add new values
         for (NodeValue nodeValue : event.getNewRoutes()) {
             routeCount = (RouteCount) nodeValue;
-            if (!this.topMap.containsKey(routeCount.getRoute())) {
+            if (!this.orderedList.containsKey(routeCount.getRoute())) {
                 // need to create a new object to avoid conflicts with earlier process objects.
-                isChanged = this.topMap.add(routeCount.getRoute(),
+                isChanged = this.orderedList.add(routeCount.getRoute(),
                         new RouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getUpdatedTime())) || isChanged;
-                isChanged = this.topMap.decrementPosition(routeCount.getRoute()) || isChanged;
+                isChanged = this.orderedList.decrementPosition(routeCount.getRoute()) || isChanged;
             } else {
-                RouteCount existingValue = (RouteCount) this.topMap.get(routeCount.getRoute());
+                RouteCount existingValue = (RouteCount) this.orderedList.get(routeCount.getRoute());
                 if (routeCount.getCount() < existingValue.getCount()) {
                     existingValue.setCount(routeCount.getCount());
                     existingValue.setUpdatedTime(routeCount.getUpdatedTime());
                     //if the new value is less it has to move further down.
-                    isChanged = this.topMap.incrementPosition(routeCount.getRoute()) || isChanged;
+                    isChanged = this.orderedList.incrementPosition(routeCount.getRoute()) || isChanged;
                 } else if (routeCount.getCount() > existingValue.getCount()) {
                     existingValue.setCount(routeCount.getCount());
                     existingValue.setUpdatedTime(routeCount.getUpdatedTime());
-                    isChanged = this.topMap.decrementPosition(routeCount.getRoute()) || isChanged;
+                    isChanged = this.orderedList.decrementPosition(routeCount.getRoute()) || isChanged;
                 }
             }
         }
 
         this.eventReceived++;
 
-        if (!Util.isSame(preList, this.topMap.getTopValues())) {
+        if (!Util.isSame(preList, this.orderedList.getTopValues())) {
             generateRouteChangeEvent(event.getStartTime(),
-                    event.getPickUpTime(), event.getDropOffTime(), topMap.getTopValues());
+                    event.getPickUpTime(), event.getDropOffTime(), orderedList.getTopValues());
         }
     }
 
@@ -103,7 +103,7 @@ public class TopRouteProcessor {
     public void close() {
 
         System.out.println("Event received ==> " + this.eventReceived);
-        System.out.println("Map size ==> " + topMap.getMapSize());
+        System.out.println("Map size ==> " + orderedList.getMapSize());
         try {
             this.eventWriter.flush();
             this.eventWriter.close();

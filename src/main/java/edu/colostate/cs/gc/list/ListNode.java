@@ -7,25 +7,27 @@ package edu.colostate.cs.gc.list;
  * Time: 12:57 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TopListNode {
+public class ListNode {
 
     private int position;
     private NodeValue nodeValue;
+    private Object key;
 
-    private TopListNode nextNode;
-    private TopListNode preNode;
+    private ListNode nextNode;
+    private ListNode preNode;
 
-    public TopListNode(int position, NodeValue nodeValue) {
+    public ListNode(int position, NodeValue nodeValue, Object key) {
         this.position = position;
         this.nodeValue = nodeValue;
+        this.key = key;
     }
 
-    public TopListNode decrementPosition(TopListNode head) {
+    public ListNode decrementPosition(ListNode head) {
 
         while ((this.preNode != null) && (this.compare(this.preNode) == 1)) {
             //swap two nodes.
-            TopListNode currentPreNode = this.preNode;
-            TopListNode currentNextNode = this.nextNode;
+            ListNode currentPreNode = this.preNode;
+            ListNode currentNextNode = this.nextNode;
 
             if (currentNextNode != null) {
                 currentNextNode.preNode = currentPreNode;
@@ -54,11 +56,11 @@ public class TopListNode {
     }
 
 
-    public TopListNode incrementPosition(TopListNode tail) {
+    public ListNode incrementPosition(ListNode tail) {
         while ((this.nextNode != null) && (this.compare(this.nextNode) == -1)) {
 
-            TopListNode currentNext = this.nextNode;
-            TopListNode currentPre = this.preNode;
+            ListNode currentNext = this.nextNode;
+            ListNode currentPre = this.preNode;
 
             if (currentPre != null) {
                 currentPre.nextNode = currentNext;
@@ -85,12 +87,16 @@ public class TopListNode {
         }
     }
 
-    public int compare(TopListNode node) {
+    public int compare(ListNode node) {
         if (node == null){
             return 1;
         } else {
             return this.nodeValue.compare(node.nodeValue);
         }
+    }
+
+    public Object getKey(){
+        return key;
     }
 
     public void incrementPosition() {
@@ -105,19 +111,19 @@ public class TopListNode {
         return position;
     }
 
-    public TopListNode getNextNode() {
+    public ListNode getNextNode() {
         return nextNode;
     }
 
-    public void setNextNode(TopListNode nextNode) {
+    public void setNextNode(ListNode nextNode) {
         this.nextNode = nextNode;
     }
 
-    public TopListNode getPreNode() {
+    public ListNode getPreNode() {
         return preNode;
     }
 
-    public void setPreNode(TopListNode preNode) {
+    public void setPreNode(ListNode preNode) {
         this.preNode = preNode;
     }
 
