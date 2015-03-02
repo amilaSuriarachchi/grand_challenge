@@ -1,5 +1,11 @@
 package edu.colostate.cs.gc.event;
 
+import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 /**
  * Created with IntelliJ IDEA.
  * User: amila
@@ -43,6 +49,19 @@ public class Route implements Comparable<Route> {
     @Override
     public String toString() {
         return this.pickUpCell.toString() + "," + this.dropOffCell.toString() + ",";
+    }
+
+    public void serialize(DataOutput dataOutput) throws MessageProcessingException {
+        this.dropOffCell.serialize(dataOutput);
+        this.pickUpCell.serialize(dataOutput);
+    }
+
+
+    public void parse(DataInput dataInput) throws MessageProcessingException {
+        this.dropOffCell = new Cell();
+        this.dropOffCell.parse(dataInput);
+        this.pickUpCell = new Cell();
+        this.pickUpCell.parse(dataInput);
     }
 
     public int compareTo(Route o) {

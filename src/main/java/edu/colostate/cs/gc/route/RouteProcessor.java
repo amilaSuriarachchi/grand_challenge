@@ -1,15 +1,17 @@
 package edu.colostate.cs.gc.route;
 
 import edu.colostate.cs.gc.event.DropOffEvent;
-import edu.colostate.cs.gc.event.Event;
+import edu.colostate.cs.gc.event.TripEvent;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
 import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.process.Processor;
+import edu.colostate.cs.gc.process.TripProcessor;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
+import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -19,7 +21,7 @@ import java.util.*;
  * Time: 3:36 PM
  * To change this template use File | Settings | File Templates.
  */
-public class RouteProcessor extends Processor {
+public class RouteProcessor extends TripProcessor {
 
     private Queue<DropOffEvent> window = new LinkedList<DropOffEvent>();
 
@@ -31,15 +33,19 @@ public class RouteProcessor extends Processor {
     private double windowAvg = 0;
     private long numOfMessages = 0;
 
-    private TopRouteProcessor topRouteProcessor;
+
     private Set<Route> lastRouteSet;
 
-    public RouteProcessor(TopRouteProcessor topRouteProcessor) {
-        this.topRouteProcessor = topRouteProcessor;
+    public RouteProcessor() {
         this.lastRouteSet = new HashSet<Route>();
     }
 
-    public void processEvent(Event event) {
+    public RouteProcessor(TripProcessor processor) {
+        this.processor = processor;
+        this.lastRouteSet = new HashSet<Route>();
+    }
+
+    public void processEvent(TripEvent event) {
 
         DropOffEvent dropOffEvent = (DropOffEvent) event;
 
@@ -98,9 +104,8 @@ public class RouteProcessor extends Processor {
         TopRoutesEvent topRoutesEvent = new TopRoutesEvent(startTime, pickUpTime, dropOffTime);
         topRoutesEvent.setRemovedRoutes(removedRoutes);
         topRoutesEvent.setNewRoutes(newRoutes);
-        this.topRouteProcessor.processEvent(topRoutesEvent);
+//        this.processor.processEvent(topRoutesEvent);
     }
-
 
     private Set<Route> getRouteSet(List<NodeValue> routeList) {
         Set<Route> routes = new HashSet<Route>();

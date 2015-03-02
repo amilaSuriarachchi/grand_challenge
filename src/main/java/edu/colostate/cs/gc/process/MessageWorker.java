@@ -1,6 +1,6 @@
 package edu.colostate.cs.gc.process;
 
-import edu.colostate.cs.gc.event.Event;
+import edu.colostate.cs.gc.event.TripEvent;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -16,18 +16,18 @@ public class MessageWorker implements Runnable {
 
     public static final int MAX_SIZE = 1000;
 
-    private Queue<Event> messages;
+    private Queue<TripEvent> messages;
     private boolean isFinished;
 
-    private Processor processor;
+    private TripProcessor processor;
 
-    public MessageWorker(Processor processor) {
-        this.messages = new LinkedList<Event>();
+    public MessageWorker(TripProcessor processor) {
+        this.messages = new LinkedList<TripEvent>();
         this.isFinished = false;
         this.processor = processor;
     }
 
-    public synchronized void addEvents(Event[] events) {
+    public synchronized void addEvents(TripEvent[] events) {
         if (this.messages.size() >= MAX_SIZE) {
             try {
                 this.wait();
@@ -35,17 +35,17 @@ public class MessageWorker implements Runnable {
             }
             addEvents(events);
         } else {
-            for (Event record : events) {
-                this.messages.add(record);
+            for (TripEvent event : events) {
+                this.messages.add(event);
             }
             this.notify();
         }
 
     }
 
-    public synchronized Event getEvent() {
+    public synchronized TripEvent getEvent() {
 
-        Event event = this.messages.poll();
+        TripEvent event = this.messages.poll();
         while ((event == null) && !this.isFinished) {
             try {
                 this.wait();
@@ -65,7 +65,7 @@ public class MessageWorker implements Runnable {
 
 
     public void run() {
-        Event event = null;
+        TripEvent event = null;
         // record will be thread executions is over.
         while ((event = getEvent()) != null) {
             this.processor.processEvent(event);

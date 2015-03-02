@@ -2,6 +2,11 @@ package edu.colostate.cs.gc.route;
 
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.list.NodeValue;
+import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,8 +18,11 @@ import edu.colostate.cs.gc.list.NodeValue;
 public class RouteCount implements NodeValue {
 
     private int count;
-    private Route route;
     private long updatedTime;
+    private Route route;
+
+    public RouteCount() {
+    }
 
     public RouteCount(int count, Route route, long updatedTime) {
         this.count = count;
@@ -51,6 +59,30 @@ public class RouteCount implements NodeValue {
             }
         }
     }
+
+
+    public void serialize(DataOutput dataOutput) throws MessageProcessingException {
+        try {
+            dataOutput.writeInt(this.count);
+            dataOutput.writeLong(this.updatedTime);
+            this.route.serialize(dataOutput);
+        } catch (IOException e) {
+            throw new MessageProcessingException("Can not write the message ");
+        }
+    }
+
+
+    public void parse(DataInput dataInput) throws MessageProcessingException {
+        try {
+            this.count = dataInput.readInt();
+            this.updatedTime = dataInput.readLong();
+            this.route = new Route();
+            this.route.parse(dataInput);
+        } catch (IOException e) {
+            throw new MessageProcessingException("Can not read the message ");
+        }
+    }
+
 
     public int getCount() {
         return count;

@@ -1,7 +1,10 @@
 package edu.colostate.cs.gc.event;
 
 import edu.colostate.cs.gc.list.NodeValue;
+import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.util.List;
 
 /**
@@ -11,7 +14,7 @@ import java.util.List;
  * Time: 4:14 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TopProfitableEvent extends Event {
+public class TopProfitableEvent extends TripEvent {
 
     private long startTime;
     private long pickTime;
@@ -23,6 +26,21 @@ public class TopProfitableEvent extends Event {
         this.pickTime = pickTime;
         this.dropTime = dropTime;
         this.profitCells = profitCells;
+    }
+
+    @Override
+    public Object getKey() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void serialize(DataOutput dataOutput) throws MessageProcessingException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void parse(DataInput dataInput) throws MessageProcessingException {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public long getStartTime() {

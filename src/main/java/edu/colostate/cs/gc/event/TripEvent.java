@@ -1,5 +1,7 @@
 package edu.colostate.cs.gc.event;
 
+import edu.colostate.cs.worker.data.Event;
+
 /**
  * Created with IntelliJ IDEA.
  * User: amila
@@ -7,5 +9,5 @@ package edu.colostate.cs.gc.event;
  * Time: 2:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Event {
+public abstract class TripEvent extends Event {
 }

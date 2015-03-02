@@ -1,6 +1,11 @@
 package edu.colostate.cs.gc.event;
 
 import edu.colostate.cs.gc.util.Constants;
+import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,19 +14,46 @@ import edu.colostate.cs.gc.util.Constants;
  * Time: 3:44 PM
  * To change this template use File | Settings | File Templates.
  */
-public class DropOffEvent extends Event {
+public class DropOffEvent extends TripEvent {
 
     private long pickUpTime;
     private long dropOffTime;
-    private int tripTime;
-    private int tripDistance;
-
     private long startTime;
 
     private Route route;
 
     public boolean isExpired(long lastEventTime) {
         return lastEventTime - this.dropOffTime > Constants.LARGE_WINDOW_SIZE;
+    }
+
+    @Override
+    public Object getKey() {
+        return this.route;
+    }
+
+    @Override
+    public void serialize(DataOutput dataOutput) throws MessageProcessingException {
+        try {
+            dataOutput.writeLong(this.pickUpTime);
+            dataOutput.writeLong(this.dropOffTime);
+            dataOutput.writeLong(this.startTime);
+            this.route.serialize(dataOutput);
+        } catch (IOException e) {
+            throw new MessageProcessingException("Can not write the message ");
+        }
+    }
+
+    @Override
+    public void parse(DataInput dataInput) throws MessageProcessingException {
+        try {
+            this.pickUpTime = dataInput.readLong();
+            this.dropOffTime = dataInput.readLong();
+            this.startTime = dataInput.readLong();
+            this.route = new Route();
+            this.route.parse(dataInput);
+        } catch (IOException e) {
+            throw new MessageProcessingException("Can not read the message ");
+        }
     }
 
     public long getPickUpTime() {
@@ -38,22 +70,6 @@ public class DropOffEvent extends Event {
 
     public void setDropOffTime(long dropOffTime) {
         this.dropOffTime = dropOffTime;
-    }
-
-    public int getTripTime() {
-        return tripTime;
-    }
-
-    public void setTripTime(int tripTime) {
-        this.tripTime = tripTime;
-    }
-
-    public int getTripDistance() {
-        return tripDistance;
-    }
-
-    public void setTripDistance(int tripDistance) {
-        this.tripDistance = tripDistance;
     }
 
     public Route getRoute() {

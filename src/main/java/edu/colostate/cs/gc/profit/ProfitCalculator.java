@@ -1,12 +1,12 @@
 package edu.colostate.cs.gc.profit;
 
 import edu.colostate.cs.gc.event.Cell;
-import edu.colostate.cs.gc.event.Event;
+import edu.colostate.cs.gc.event.TripEvent;
 import edu.colostate.cs.gc.event.PaymentEvent;
 import edu.colostate.cs.gc.event.TopProfitableEvent;
 import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.process.Processor;
+import edu.colostate.cs.gc.process.TripProcessor;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
 
@@ -21,7 +21,7 @@ import java.util.Queue;
  * Time: 4:59 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ProfitCalculator extends Processor {
+public class ProfitCalculator extends TripProcessor {
 
     private Queue<PaymentEvent> paymentWindow = new LinkedList<PaymentEvent>();
     private Queue<PaymentEvent> dropWindow = new LinkedList<PaymentEvent>();
@@ -40,7 +40,7 @@ public class ProfitCalculator extends Processor {
         this.profitEventWriter = new ProfitEventWriter();
     }
 
-    public void processEvent(Event event) {
+    public void processEvent(TripEvent event) {
 
         PaymentEvent paymentEvent = (PaymentEvent) event;
 

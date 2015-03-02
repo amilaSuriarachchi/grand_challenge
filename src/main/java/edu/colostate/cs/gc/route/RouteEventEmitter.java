@@ -5,13 +5,17 @@ import edu.colostate.cs.gc.event.DropOffEvent;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.exception.OutlierPointException;
 import edu.colostate.cs.gc.process.MessageBuffer;
+import edu.colostate.cs.gc.process.TripProcessor;
 import edu.colostate.cs.gc.util.Constants;
+import edu.colostate.cs.worker.api.Adaptor;
+import edu.colostate.cs.worker.api.Container;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,20 +24,21 @@ import java.text.SimpleDateFormat;
  * Time: 1:59 PM
  * To change this template use File | Settings | File Templates.
  */
-public class RouteEventEmitter {
+public class RouteEventEmitter implements Adaptor {
+
+    private Container container;
+    private String fileName;
 
 
-    private void loadData() {
+    private void loadData(String fileName, TripProcessor processor) {
 
-        String fileName = "data/sorted_data.csv";
         try {
             int errorLines = 0;
-            int numberOfBuffers = 4;
+            int numberOfBuffers = 2;
             //initialize buffers
-            TopRouteProcessor topRouteProcessor = new TopRouteProcessor();
             MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
             for (int i = 0; i < messageBuffers.length; i++) {
-                 messageBuffers[i] = new MessageBuffer(new RouteProcessor(topRouteProcessor));
+                messageBuffers[i] = new MessageBuffer(processor);
             }
 
             String line;
@@ -41,6 +46,9 @@ public class RouteEventEmitter {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             long currentTime = System.currentTimeMillis();
+
+            int eventCount = 0;
+
             while ((line = bufferedReader.readLine()) != null) {
                 String[] values = line.split(",");
                 try {
@@ -55,13 +63,14 @@ public class RouteEventEmitter {
                     dropOffEvent.setRoute(route);
                     int bufferNumber = route.hashCode() % numberOfBuffers;
                     messageBuffers[bufferNumber].addMessage(dropOffEvent);
-//                    this.eventDataProcessor.processEvent(dropOffEvent);
 
                 } catch (OutlierPointException e) {
 
                 } catch (Exception e) {
                     errorLines++;
                 }
+
+                eventCount++;
             }
 
             // finish all buffers
@@ -71,14 +80,13 @@ public class RouteEventEmitter {
 
             System.out.println("Total time (ms) " + (System.currentTimeMillis() - currentTime));
             System.out.println("Total error lines " + errorLines);
+            System.out.println("Event count " + eventCount);
 
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            topRouteProcessor.close();
-
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -86,6 +94,15 @@ public class RouteEventEmitter {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
+    }
+
+    public void start() {
+        this.loadData(this.fileName, new StreamEmitter(this.container));
+    }
+
+    public void initialise(Container container, Map<String, String> parameterMap) {
+        this.container = container;
+        this.fileName = parameterMap.get("fileName");
     }
 
     private Cell getCell(double longitude, double latitude) throws OutlierPointException {
@@ -103,6 +120,9 @@ public class RouteEventEmitter {
 
 
     public static void main(String[] args) {
-        new RouteEventEmitter().loadData();
+        String fileName = "data/sorted_data.csv";
+        TopRouteProcessor topRouteProcessor = new TopRouteProcessor();
+        new RouteEventEmitter().loadData(fileName, new RouteProcessor(topRouteProcessor));
+        topRouteProcessor.close();
     }
 }

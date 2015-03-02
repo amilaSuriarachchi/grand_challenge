@@ -1,11 +1,11 @@
 package edu.colostate.cs.gc.route;
 
-import edu.colostate.cs.gc.event.Event;
+import edu.colostate.cs.gc.event.TripEvent;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
 import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.process.Processor;
+import edu.colostate.cs.gc.process.TripProcessor;
 import edu.colostate.cs.gc.util.Util;
 
 import java.io.BufferedWriter;
@@ -22,14 +22,15 @@ import java.util.List;
  * Time: 11:53 AM
  * To change this template use File | Settings | File Templates.
  */
-public class TopRouteProcessor extends Processor {
+public class TopRouteProcessor extends TripProcessor {
 
     private NodeList nodeList;
 
     private BufferedWriter eventWriter;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private int eventReceived = 0;
+    private int eventsWritten = 0;
+    private int eventsReceived = 0;
 
     private double avgDelay = 0;
     private int numOfEvents = 0;
@@ -37,14 +38,14 @@ public class TopRouteProcessor extends Processor {
     public TopRouteProcessor() {
         this.nodeList = new NodeList();
         try {
-            this.eventWriter = new BufferedWriter(new FileWriter("data/top_routs.txt"));
+            this.eventWriter = new BufferedWriter(new FileWriter("top_routs.txt"));
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
     }
 
-    public synchronized void processEvent(Event event) {
+    public synchronized void processEvent(TripEvent event) {
 
         TopRoutesEvent topRoutesEvent = (TopRoutesEvent) event;
         // remove old routes
@@ -78,12 +79,19 @@ public class TopRouteProcessor extends Processor {
             }
         }
 
-        this.eventReceived++;
+        this.eventsReceived++;
+        if (this.eventsReceived % 1000 == 0){
+            System.out.println("Events Received ==> " + this.eventsReceived);
+        }
+
 
         if (!Util.isSame(preList, this.nodeList.getTopValues())) {
             generateRouteChangeEvent(topRoutesEvent.getStartTime(),
                     topRoutesEvent.getPickUpTime(), topRoutesEvent.getDropOffTime(), nodeList.getTopValues());
-
+            this.eventsWritten++;
+            if (this.eventsWritten % 1000 == 0) {
+                System.out.println("Events written " + this.eventsWritten);
+            }
         }
     }
 
@@ -102,7 +110,6 @@ public class TopRouteProcessor extends Processor {
             }
             this.eventWriter.write(delay + "");
             this.eventWriter.newLine();
-
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -110,7 +117,7 @@ public class TopRouteProcessor extends Processor {
 
     public void close() {
 
-        System.out.println("Event received ==> " + this.eventReceived);
+        System.out.println("Event received ==> " + this.eventsWritten);
         System.out.println("Avg Delay ==> " + this.avgDelay);
         try {
             this.eventWriter.flush();

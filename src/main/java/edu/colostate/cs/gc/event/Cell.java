@@ -1,5 +1,11 @@
 package edu.colostate.cs.gc.event;
 
+import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 /**
  * Created with IntelliJ IDEA.
  * User: amila
@@ -11,6 +17,9 @@ public class Cell implements Comparable<Cell> {
 
     private int column;
     private int row;
+
+    public Cell() {
+    }
 
     public Cell(int column, int row) {
         this.column = column;
@@ -40,6 +49,26 @@ public class Cell implements Comparable<Cell> {
     @Override
     public String toString() {
         return (this.column + 1) + "." + (this.row + 1);
+    }
+
+    public void serialize(DataOutput dataOutput) throws MessageProcessingException {
+        try {
+            dataOutput.writeInt(this.column);
+            dataOutput.writeInt(this.row);
+        } catch (IOException e) {
+            throw new MessageProcessingException("Can not write the message ");
+        }
+
+    }
+
+
+    public void parse(DataInput dataInput) throws MessageProcessingException {
+        try {
+            this.column = dataInput.readInt();
+            this.row = dataInput.readInt();
+        } catch (IOException e) {
+            throw new MessageProcessingException("Can not read the message ");
+        }
     }
 
     public int compareTo(Cell o) {

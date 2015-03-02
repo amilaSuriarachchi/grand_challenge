@@ -1,9 +1,8 @@
 package edu.colostate.cs.gc.profit;
 
-import edu.colostate.cs.gc.event.Event;
+import edu.colostate.cs.gc.event.TripEvent;
 import edu.colostate.cs.gc.event.TopProfitableEvent;
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.process.Processor;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -35,7 +34,7 @@ public class ProfitEventWriter {
     }
 
 
-    public void processEvent(Event event) {
+    public void processEvent(TripEvent event) {
         TopProfitableEvent topProfitableEvent = (TopProfitableEvent) event;
         long delay = System.currentTimeMillis() - topProfitableEvent.getStartTime();
         this.avgDelay = (this.avgDelay * this.numOfEvents + delay) / (this.numOfEvents + 1);

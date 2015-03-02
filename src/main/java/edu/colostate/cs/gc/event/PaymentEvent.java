@@ -1,6 +1,9 @@
 package edu.colostate.cs.gc.event;
 
-import edu.colostate.cs.gc.util.Constants;
+import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
+
+import java.io.DataInput;
+import java.io.DataOutput;
 
 /**
  * Created with IntelliJ IDEA.
@@ -9,7 +12,7 @@ import edu.colostate.cs.gc.util.Constants;
  * Time: 11:38 AM
  * To change this template use File | Settings | File Templates.
  */
-public class PaymentEvent extends Event {
+public class PaymentEvent extends TripEvent {
 
     private String medallion;
     private double fare;
@@ -24,6 +27,21 @@ public class PaymentEvent extends Event {
 
     public boolean isExpired(long lastEventTime, long windowSize) {
         return (lastEventTime - this.dropOffTime) > windowSize;
+    }
+
+    @Override
+    public Object getKey() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void serialize(DataOutput dataOutput) throws MessageProcessingException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void parse(DataInput dataInput) throws MessageProcessingException {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public String getMedallion() {

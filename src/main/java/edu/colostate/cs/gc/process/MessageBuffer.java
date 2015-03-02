@@ -1,6 +1,6 @@
 package edu.colostate.cs.gc.process;
 
-import edu.colostate.cs.gc.event.Event;
+import edu.colostate.cs.gc.event.TripEvent;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,34 +11,42 @@ import edu.colostate.cs.gc.event.Event;
  */
 public class MessageBuffer {
 
-    public static final int MAX_BUFFER_SIZE = 10;
+    public static final int MAX_BUFFER_SIZE = 100;
 
     private MessageWorker messageWorker;
-    private Event[] buffer;
+    private TripEvent[] buffer;
     private int bufferCount;
 
-    public MessageBuffer(Processor processor) {
+    public MessageBuffer(TripProcessor processor) {
 
         this.messageWorker = new MessageWorker(processor);
         Thread thread = new Thread(this.messageWorker);
         thread.start();
 
-        this.buffer = new Event[MAX_BUFFER_SIZE];
+        this.buffer = new TripEvent[MAX_BUFFER_SIZE];
         this.bufferCount = 0;
 
     }
 
-    public void addMessage(Event event){
+    public void addMessage(TripEvent event) {
 
         this.buffer[this.bufferCount] = event;
         this.bufferCount++;
-        if (this.bufferCount == MAX_BUFFER_SIZE){
+        if (this.bufferCount == MAX_BUFFER_SIZE) {
             this.messageWorker.addEvents(this.buffer);
             this.bufferCount = 0;
         }
     }
 
-    public void setFinish(){
+    public void setFinish() {
+        if (this.bufferCount > 0) {
+            TripEvent[] remainder = new TripEvent[this.bufferCount];
+            for (int i = 0; i < this.bufferCount; i++) {
+                remainder[i] = this.buffer[i];
+            }
+            this.messageWorker.addEvents(remainder);
+        }
+
         this.messageWorker.setFinish();
     }
 }
