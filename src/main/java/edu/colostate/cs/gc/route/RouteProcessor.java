@@ -34,8 +34,6 @@ public class RouteProcessor extends TripProcessor {
 
     private Set<Route> lastRouteSet;
 
-    private long processingTime = 0;
-
     public RouteProcessor() {
         this.lastRouteSet = new HashSet<Route>();
     }
@@ -97,7 +95,7 @@ public class RouteProcessor extends TripProcessor {
 
         this.windowAvg = (this.windowAvg * this.numOfMessages + this.window.size()) / (this.numOfMessages + 1);
         this.numOfMessages++;
-        this.processingTime = this.processingTime + System.nanoTime() - startTime;
+
 
     }
 
@@ -126,7 +124,6 @@ public class RouteProcessor extends TripProcessor {
     }
 
     public void close() {
-        System.out.println("Total time ==> " + this.processingTime);
         System.out.println("Average window size ==> " + this.windowAvg);
     }
 }

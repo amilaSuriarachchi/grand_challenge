@@ -28,6 +28,7 @@ public class RouteEventEmitter implements Adaptor {
 
     private Container container;
     private String fileName;
+    private int numberOfThreads;
 
 
     private void loadData(String fileName, MessageBuffer[] messageBuffers) {
@@ -36,7 +37,6 @@ public class RouteEventEmitter implements Adaptor {
             int errorLines = 0;
             String line;
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
-//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             long currentTime = System.currentTimeMillis();
             int eventCount = 0;
@@ -89,15 +89,18 @@ public class RouteEventEmitter implements Adaptor {
     }
 
     public void start() {
-        MessageBuffer[] messageBuffers = new MessageBuffer[2];
-        messageBuffers[0] = new MessageBuffer(new StreamEmitter(this.container));
-        messageBuffers[1] = new MessageBuffer(new StreamEmitter(this.container));
+        MessageBuffer[] messageBuffers = new MessageBuffer[this.numberOfThreads];
+        StreamEmitter streamEmitter = new StreamEmitter(this.container);
+        for (int i = 0; i < this.numberOfThreads; i++) {
+            messageBuffers[i] = new MessageBuffer(streamEmitter);
+        }
         this.loadData(this.fileName, messageBuffers);
     }
 
     public void initialise(Container container, Map<String, String> parameterMap) {
         this.container = container;
         this.fileName = parameterMap.get("fileName");
+        this.numberOfThreads = Integer.parseInt(parameterMap.get("threads"));
     }
 
     private Cell getCell(double longitude, double latitude) throws OutlierPointException {
@@ -112,7 +115,6 @@ public class RouteEventEmitter implements Adaptor {
             throw new OutlierPointException(" longitude " + latitude + " latitude " + latitude + " lies out side");
         }
     }
-
 
 
     public static void main(String[] args) {
