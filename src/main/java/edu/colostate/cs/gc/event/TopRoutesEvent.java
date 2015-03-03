@@ -22,7 +22,7 @@ import java.util.Set;
  */
 public class TopRoutesEvent extends TripEvent {
 
-    private long pickUpTime;
+    private String pickUpTime;
     private long dropOffTime;
     private long startTime;
 
@@ -33,7 +33,7 @@ public class TopRoutesEvent extends TripEvent {
         this.newRoutes = new ArrayList<TopRouteCount>();
     }
 
-    public TopRoutesEvent(long startTime, long pickUpTime, long dropOffTime) {
+    public TopRoutesEvent(long startTime, String pickUpTime, long dropOffTime) {
         this();
         this.startTime = startTime;
         this.pickUpTime = pickUpTime;
@@ -52,7 +52,7 @@ public class TopRoutesEvent extends TripEvent {
     @Override
     public void serialize(DataOutput dataOutput) throws MessageProcessingException {
         try {
-            dataOutput.writeLong(this.pickUpTime);
+            dataOutput.writeUTF(this.pickUpTime);
             dataOutput.writeLong(this.dropOffTime);
             dataOutput.writeLong(this.startTime);
 
@@ -73,7 +73,7 @@ public class TopRoutesEvent extends TripEvent {
     @Override
     public void parse(DataInput dataInput) throws MessageProcessingException {
         try {
-            this.pickUpTime = dataInput.readLong();
+            this.pickUpTime = dataInput.readUTF();
             this.dropOffTime = dataInput.readLong();
             this.startTime = dataInput.readLong();
 
@@ -96,11 +96,11 @@ public class TopRoutesEvent extends TripEvent {
         }
     }
 
-    public long getPickUpTime() {
+    public String getPickUpTime() {
         return pickUpTime;
     }
 
-    public void setPickUpTime(long pickUpTime) {
+    public void setPickUpTime(String pickUpTime) {
         this.pickUpTime = pickUpTime;
     }
 

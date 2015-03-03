@@ -83,14 +83,14 @@ public class TopRouteProcessor extends TripProcessor {
         }
     }
 
-    public void generateRouteChangeEvent(long startTime, long pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {
+    public void generateRouteChangeEvent(long startTime, String pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {
 
         try {
             long delay = System.currentTimeMillis() - startTime;
             this.avgDelay = (this.avgDelay * this.numOfEvents + delay) / (this.numOfEvents + 1);
             this.numOfEvents++;
 
-            this.eventWriter.write(this.simpleDateFormat.format(new Date(pickUpTime)) + ",");
+            this.eventWriter.write(pickUpTime + ",");
             this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
             for (NodeValue nodeValue : nodeValues) {
                 TopRouteCount routeCount = (TopRouteCount) nodeValue;

@@ -6,6 +6,7 @@ import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.exception.OutlierPointException;
 import edu.colostate.cs.gc.process.MessageBuffer;
 import edu.colostate.cs.gc.util.Constants;
+import edu.colostate.cs.gc.util.Util;
 import edu.colostate.cs.worker.api.Adaptor;
 import edu.colostate.cs.worker.api.Container;
 
@@ -35,7 +36,7 @@ public class RouteEventEmitter implements Adaptor {
             int errorLines = 0;
             String line;
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             long currentTime = System.currentTimeMillis();
             int eventCount = 0;
@@ -46,8 +47,8 @@ public class RouteEventEmitter implements Adaptor {
 
                     DropOffEvent dropOffEvent = new DropOffEvent();
                     dropOffEvent.setStartTime(System.currentTimeMillis());
-                    dropOffEvent.setPickUpTime(dateFormat.parse(values[2]).getTime());
-                    dropOffEvent.setDropOffTime(dateFormat.parse(values[3]).getTime());
+                    dropOffEvent.setPickUpTime(values[2]);
+                    dropOffEvent.setDropOffTime(values[3]);
                     Route route = new Route();
                     route.setPickUpCell(getCell(Double.parseDouble(values[6]), Double.parseDouble(values[7])));
                     route.setDropOffCell(getCell(Double.parseDouble(values[8]), Double.parseDouble(values[9])));
@@ -88,8 +89,9 @@ public class RouteEventEmitter implements Adaptor {
     }
 
     public void start() {
-        MessageBuffer[] messageBuffers = new MessageBuffer[1];
+        MessageBuffer[] messageBuffers = new MessageBuffer[2];
         messageBuffers[0] = new MessageBuffer(new StreamEmitter(this.container));
+        messageBuffers[1] = new MessageBuffer(new StreamEmitter(this.container));
         this.loadData(this.fileName, messageBuffers);
     }
 
@@ -111,10 +113,12 @@ public class RouteEventEmitter implements Adaptor {
         }
     }
 
+
+
     public static void main(String[] args) {
         String fileName = "data/sorted_data.csv";
         TopRouteProcessor topRouteProcessor = new TopRouteProcessor();
-        int numberOfBuffers = 1;
+        int numberOfBuffers = 2;
         //initialize buffers
         MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
         for (int i = 0; i < messageBuffers.length; i++) {

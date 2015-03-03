@@ -9,9 +9,7 @@ import edu.colostate.cs.gc.list.NodeValue;
 import edu.colostate.cs.gc.process.TripProcessor;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
-import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
 
-import java.io.*;
 import java.util.*;
 
 /**
@@ -36,6 +34,8 @@ public class RouteProcessor extends TripProcessor {
 
     private Set<Route> lastRouteSet;
 
+    private long processingTime = 0;
+
     public RouteProcessor() {
         this.lastRouteSet = new HashSet<Route>();
     }
@@ -47,11 +47,15 @@ public class RouteProcessor extends TripProcessor {
 
     public synchronized void processEvent(TripEvent event) {
 
+        long startTime = System.nanoTime();
+
         DropOffEvent dropOffEvent = (DropOffEvent) event;
+        // Upto here drop off time comes as a string. convert it to milliseconds.
+        dropOffEvent.processDropOffTime();
 
         if (!this.isStarted) {
             this.isStarted = true;
-            this.startTime = dropOffEvent.getDropOffTime();
+            this.startTime = dropOffEvent.getDropOffTimeMillis();
         }
 
         List<NodeValue> preList = nodeList.getTopValues();
@@ -59,17 +63,17 @@ public class RouteProcessor extends TripProcessor {
         this.window.add(dropOffEvent);
         // whether the current top ten events get changed.
         if (!this.nodeList.containsKey(dropOffEvent.getRoute())) {
-            this.nodeList.add(dropOffEvent.getRoute(), new RouteCount(1, dropOffEvent.getRoute(), dropOffEvent.getDropOffTime()));
+            this.nodeList.add(dropOffEvent.getRoute(), new RouteCount(1, dropOffEvent.getRoute(), dropOffEvent.getDropOffTimeMillis()));
         } else {
             RouteCount routeCount = (RouteCount) this.nodeList.get(dropOffEvent.getRoute());
             routeCount.incrementCount();
-            routeCount.setUpdatedTime(dropOffEvent.getDropOffTime());
+            routeCount.setUpdatedTime(dropOffEvent.getDropOffTimeMillis());
             // after increasing the count we need to move this element towards the head. i.e reduce position.
             this.nodeList.decrementPosition(dropOffEvent.getRoute());
         }
 
         // pull out expired events
-        while (!this.window.isEmpty() && this.window.peek().isExpired(dropOffEvent.getDropOffTime())) {
+        while (!this.window.isEmpty() && this.window.peek().isExpired(dropOffEvent.getDropOffTimeMillis())) {
             DropOffEvent expiredEvent = this.window.poll();
             RouteCount routeCount = (RouteCount) this.nodeList.get(expiredEvent.getRoute());
             routeCount.decrementCount();
@@ -81,23 +85,25 @@ public class RouteProcessor extends TripProcessor {
         }
 
         List<NodeValue> currentList = this.nodeList.getTopValues();
-        if (!Util.isSame(preList, currentList) && (dropOffEvent.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+
+        if (!Util.isSame(preList, currentList) && (dropOffEvent.getDropOffTimeMillis() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
             Set<Route> currentRoutSet = getRouteSet(currentList);
             this.lastRouteSet.removeAll(currentRoutSet);
             generateRouteChangeEvent(dropOffEvent.getStartTime(), dropOffEvent.getPickUpTime(),
-                    dropOffEvent.getDropOffTime(), this.lastRouteSet, currentList);
+                    dropOffEvent.getDropOffTimeMillis(), this.lastRouteSet, currentList);
             this.lastRouteSet = getRouteSet(currentList);
 
         }
 
         this.windowAvg = (this.windowAvg * this.numOfMessages + this.window.size()) / (this.numOfMessages + 1);
         this.numOfMessages++;
+        this.processingTime = this.processingTime + System.nanoTime() - startTime;
 
     }
 
 
     public void generateRouteChangeEvent(long startTime,
-                                         long pickUpTime,
+                                         String pickUpTime,
                                          long dropOffTime,
                                          Set<Route> removedRoutes,
                                          List<NodeValue> newRoutes) {
@@ -120,6 +126,7 @@ public class RouteProcessor extends TripProcessor {
     }
 
     public void close() {
+        System.out.println("Total time ==> " + this.processingTime);
         System.out.println("Average window size ==> " + this.windowAvg);
     }
 }

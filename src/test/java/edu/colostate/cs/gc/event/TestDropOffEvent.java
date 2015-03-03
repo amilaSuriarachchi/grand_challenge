@@ -17,8 +17,8 @@ public class TestDropOffEvent extends TestCase {
     public void testParsing(){
         DropOffEvent dropOffEvent = new DropOffEvent();
 
-        dropOffEvent.setPickUpTime(12345);
-        dropOffEvent.setDropOffTime(2345);
+        dropOffEvent.setPickUpTime("2013-01-01 00:01:00");
+        dropOffEvent.setDropOffTime("2013-01-01 00:02:00");
         dropOffEvent.setStartTime(234);
 
         Cell dropOffCell = new Cell(23,345);

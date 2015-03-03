@@ -1,6 +1,7 @@
 package edu.colostate.cs.gc.event;
 
 import edu.colostate.cs.gc.util.Constants;
+import edu.colostate.cs.gc.util.Util;
 import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
 
 import java.io.DataInput;
@@ -16,14 +17,16 @@ import java.io.IOException;
  */
 public class DropOffEvent extends TripEvent {
 
-    private long pickUpTime;
-    private long dropOffTime;
+    private String pickUpTime;
+    private String dropOffTime;
     private long startTime;
+    private long dropOffTimeMillis;
 
     private Route route;
 
+
     public boolean isExpired(long lastEventTime) {
-        return lastEventTime - this.dropOffTime > Constants.LARGE_WINDOW_SIZE;
+        return lastEventTime - this.dropOffTimeMillis > Constants.LARGE_WINDOW_SIZE;
     }
 
     @Override
@@ -34,8 +37,8 @@ public class DropOffEvent extends TripEvent {
     @Override
     public void serialize(DataOutput dataOutput) throws MessageProcessingException {
         try {
-            dataOutput.writeLong(this.pickUpTime);
-            dataOutput.writeLong(this.dropOffTime);
+            dataOutput.writeUTF(this.pickUpTime);
+            dataOutput.writeUTF(this.dropOffTime);
             dataOutput.writeLong(this.startTime);
             this.route.serialize(dataOutput);
         } catch (IOException e) {
@@ -46,8 +49,8 @@ public class DropOffEvent extends TripEvent {
     @Override
     public void parse(DataInput dataInput) throws MessageProcessingException {
         try {
-            this.pickUpTime = dataInput.readLong();
-            this.dropOffTime = dataInput.readLong();
+            this.pickUpTime = dataInput.readUTF();
+            this.dropOffTime = dataInput.readUTF();
             this.startTime = dataInput.readLong();
             this.route = new Route();
             this.route.parse(dataInput);
@@ -56,19 +59,27 @@ public class DropOffEvent extends TripEvent {
         }
     }
 
-    public long getPickUpTime() {
+    public void processDropOffTime(){
+        this.dropOffTimeMillis = Util.getTime(this.dropOffTime);
+    }
+
+    public long getDropOffTimeMillis() {
+        return dropOffTimeMillis;
+    }
+
+    public String getPickUpTime() {
         return pickUpTime;
     }
 
-    public void setPickUpTime(long pickUpTime) {
+    public void setPickUpTime(String pickUpTime) {
         this.pickUpTime = pickUpTime;
     }
 
-    public long getDropOffTime() {
+    public String getDropOffTime() {
         return dropOffTime;
     }
 
-    public void setDropOffTime(long dropOffTime) {
+    public void setDropOffTime(String dropOffTime) {
         this.dropOffTime = dropOffTime;
     }
 
