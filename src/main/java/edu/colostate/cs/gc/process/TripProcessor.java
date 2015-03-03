@@ -24,14 +24,13 @@ public abstract class TripProcessor implements Processor {
 
     public abstract void close();
 
-    public synchronized void onEvent(Event event) {
+    public void onEvent(Event event) {
         processEvent((TripEvent)event);
     }
 
     public void initialise(Container container, Map<String, String> stringStringMap) {
         this.container = container;
         this.processor = new StreamEmitter(this.container);
-        System.out.println("Initializing process .... ");
 
     }
 }

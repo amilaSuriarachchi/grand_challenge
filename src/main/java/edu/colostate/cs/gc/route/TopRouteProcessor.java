@@ -29,11 +29,10 @@ public class TopRouteProcessor extends TripProcessor {
     private BufferedWriter eventWriter;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private int eventsWritten = 0;
-    private int eventsReceived = 0;
-
     private double avgDelay = 0;
     private int numOfEvents = 0;
+
+    private int eventsWritten = 0;
 
     public TopRouteProcessor() {
         this.nodeList = new NodeList();
@@ -48,24 +47,21 @@ public class TopRouteProcessor extends TripProcessor {
     public synchronized void processEvent(TripEvent event) {
 
         TopRoutesEvent topRoutesEvent = (TopRoutesEvent) event;
-        // remove old routes
-        RouteCount routeCount = null;
-
         List<NodeValue> preList = this.nodeList.getTopValues();
 
+        // remove old routes
         for (Route route : topRoutesEvent.getRemovedRoutes()) {
             this.nodeList.remove(route);
         }
 
         // add new values
-        for (NodeValue nodeValue : topRoutesEvent.getNewRoutes()) {
-            routeCount = (RouteCount) nodeValue;
+        for (TopRouteCount routeCount : topRoutesEvent.getNewRoutes()) {
+
             if (!this.nodeList.containsKey(routeCount.getRoute())) {
                 // need to create a new object to avoid conflicts with earlier process objects.
-                this.nodeList.add(routeCount.getRoute(),
-                        new RouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getUpdatedTime()));
+                this.nodeList.add(routeCount.getRoute(),routeCount);
             } else {
-                RouteCount existingValue = (RouteCount) this.nodeList.get(routeCount.getRoute());
+                TopRouteCount existingValue = (TopRouteCount) this.nodeList.get(routeCount.getRoute());
                 if (routeCount.getCount() < existingValue.getCount()) {
                     existingValue.setCount(routeCount.getCount());
                     existingValue.setUpdatedTime(routeCount.getUpdatedTime());
@@ -79,19 +75,11 @@ public class TopRouteProcessor extends TripProcessor {
             }
         }
 
-        this.eventsReceived++;
-        if (this.eventsReceived % 1000 == 0){
-            System.out.println("Events Received ==> " + this.eventsReceived);
-        }
-
-
-        if (!Util.isSame(preList, this.nodeList.getTopValues())) {
+        List<NodeValue> newList = this.nodeList.getTopValues();
+        if (!Util.isSame(preList, newList)) {
             generateRouteChangeEvent(topRoutesEvent.getStartTime(),
                     topRoutesEvent.getPickUpTime(), topRoutesEvent.getDropOffTime(), nodeList.getTopValues());
             this.eventsWritten++;
-            if (this.eventsWritten % 1000 == 0) {
-                System.out.println("Events written " + this.eventsWritten);
-            }
         }
     }
 
@@ -105,7 +93,7 @@ public class TopRouteProcessor extends TripProcessor {
             this.eventWriter.write(this.simpleDateFormat.format(new Date(pickUpTime)) + ",");
             this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
             for (NodeValue nodeValue : nodeValues) {
-                RouteCount routeCount = (RouteCount) nodeValue;
+                TopRouteCount routeCount = (TopRouteCount) nodeValue;
                 this.eventWriter.write(routeCount.getRoute().toString());
             }
             this.eventWriter.write(delay + "");

@@ -2,6 +2,7 @@ package edu.colostate.cs.gc.event;
 
 import edu.colostate.cs.gc.list.NodeValue;
 import edu.colostate.cs.gc.route.RouteCount;
+import edu.colostate.cs.gc.route.TopRouteCount;
 import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
 
 import java.io.DataInput;
@@ -26,15 +27,21 @@ public class TopRoutesEvent extends TripEvent {
     private long startTime;
 
     private Set<Route> removedRoutes;
-    private List<NodeValue> newRoutes;
+    private List<TopRouteCount> newRoutes;
 
     public TopRoutesEvent() {
+        this.newRoutes = new ArrayList<TopRouteCount>();
     }
 
     public TopRoutesEvent(long startTime, long pickUpTime, long dropOffTime) {
+        this();
         this.startTime = startTime;
         this.pickUpTime = pickUpTime;
         this.dropOffTime = dropOffTime;
+    }
+
+    public void addRouteCount(TopRouteCount topRouteCount){
+        this.newRoutes.add(topRouteCount);
     }
 
     @Override
@@ -54,8 +61,7 @@ public class TopRoutesEvent extends TripEvent {
                 route.serialize(dataOutput);
             }
             dataOutput.writeInt(this.newRoutes.size());
-            for (NodeValue nodeValue : this.newRoutes) {
-                RouteCount routeCount = (RouteCount) nodeValue;
+            for (TopRouteCount routeCount : this.newRoutes) {
                 routeCount.serialize(dataOutput);
             }
 
@@ -80,42 +86,14 @@ public class TopRoutesEvent extends TripEvent {
             }
 
             length = dataInput.readInt();
-            this.newRoutes = new ArrayList<NodeValue>();
             for (int i = 0; i < length; i++) {
-                RouteCount routeCount = new RouteCount();
+                TopRouteCount routeCount = new TopRouteCount();
                 routeCount.parse(dataInput);
                 this.newRoutes.add(routeCount);
             }
-
         } catch (IOException e) {
             throw new MessageProcessingException("Can not read the message ");
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TopRoutesEvent that = (TopRoutesEvent) o;
-
-        if (dropOffTime != that.dropOffTime) return false;
-        if (pickUpTime != that.pickUpTime) return false;
-        if (startTime != that.startTime) return false;
-        if (!newRoutes.equals(that.newRoutes)) return false;
-        if (!removedRoutes.equals(that.removedRoutes)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (pickUpTime ^ (pickUpTime >>> 32));
-        result = 31 * result + (int) (dropOffTime ^ (dropOffTime >>> 32));
-        result = 31 * result + (int) (startTime ^ (startTime >>> 32));
-        result = 31 * result + removedRoutes.hashCode();
-        result = 31 * result + newRoutes.hashCode();
-        return result;
     }
 
     public long getPickUpTime() {
@@ -150,11 +128,11 @@ public class TopRoutesEvent extends TripEvent {
         this.removedRoutes = removedRoutes;
     }
 
-    public List<NodeValue> getNewRoutes() {
+    public List<TopRouteCount> getNewRoutes() {
         return newRoutes;
     }
 
-    public void setNewRoutes(List<NodeValue> newRoutes) {
+    public void setNewRoutes(List<TopRouteCount> newRoutes) {
         this.newRoutes = newRoutes;
     }
 }

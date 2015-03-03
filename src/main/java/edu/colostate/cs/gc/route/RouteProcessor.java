@@ -1,9 +1,9 @@
 package edu.colostate.cs.gc.route;
 
 import edu.colostate.cs.gc.event.DropOffEvent;
-import edu.colostate.cs.gc.event.TripEvent;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.event.TopRoutesEvent;
+import edu.colostate.cs.gc.event.TripEvent;
 import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
 import edu.colostate.cs.gc.process.TripProcessor;
@@ -45,7 +45,7 @@ public class RouteProcessor extends TripProcessor {
         this.lastRouteSet = new HashSet<Route>();
     }
 
-    public void processEvent(TripEvent event) {
+    public synchronized void processEvent(TripEvent event) {
 
         DropOffEvent dropOffEvent = (DropOffEvent) event;
 
@@ -103,8 +103,12 @@ public class RouteProcessor extends TripProcessor {
                                          List<NodeValue> newRoutes) {
         TopRoutesEvent topRoutesEvent = new TopRoutesEvent(startTime, pickUpTime, dropOffTime);
         topRoutesEvent.setRemovedRoutes(removedRoutes);
-        topRoutesEvent.setNewRoutes(newRoutes);
-//        this.processor.processEvent(topRoutesEvent);
+        for (NodeValue nodeValue : newRoutes){
+            RouteCount routeCount = (RouteCount) nodeValue;
+            topRoutesEvent.addRouteCount(
+                    new TopRouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getUpdatedTime()));
+        }
+        this.processor.processEvent(topRoutesEvent);
     }
 
     private Set<Route> getRouteSet(List<NodeValue> routeList) {

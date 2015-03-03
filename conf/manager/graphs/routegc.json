@@ -1,0 +1,40 @@
+    {
+        "processors": [
+            {
+                "name": "route",
+                "className": "edu.colostate.cs.gc.route.RouteProcessor",
+                "cluster" : "route",
+                "instances" : 4,
+                "receivers" :[
+                    {
+                        "name" : "producer",
+                        "type" : "hash"
+                    }
+                ]
+            },
+            {
+                "name": "top",
+                "className": "edu.colostate.cs.gc.route.TopRouteProcessor",
+                "cluster" : "top",
+                "instances" : 1,
+                "receivers" :[
+                    {
+                        "name" : "route",
+                        "type" : "random"
+                    }
+                ]
+            }
+        ],
+        "adapters": [
+            {
+                "name": "producer",
+                "className": "edu.colostate.cs.gc.route.RouteEventEmitter",
+                "cluster" : "adapter",
+                "instances" : 1,
+                "eventType" : "edu.colostate.cs.gc.event.DropOffEvent",
+                "parameters" : [
+                    { "name" : "fileName", "value" : "/home/amila/csu-msc/research/projects/grand_challenge/data/sorted_data.csv"}
+                ]
+            }
+        ]
+    }
