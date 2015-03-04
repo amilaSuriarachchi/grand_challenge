@@ -50,13 +50,15 @@ public class RouteEventEmitter implements Adaptor {
                     dropOffEvent.setPickUpTime(values[2]);
                     dropOffEvent.setDropOffTime(values[3]);
                     Route route = new Route();
+                    //this cell processing seems to be taking some time. But lets keep it since this is required
+                    //to calculate event.
                     route.setPickUpCell(getCell(Double.parseDouble(values[6]), Double.parseDouble(values[7])));
                     route.setDropOffCell(getCell(Double.parseDouble(values[8]), Double.parseDouble(values[9])));
-                    dropOffEvent.setRoute(route);
-                    int bufferNumber = route.hashCode() % messageBuffers.length;
-                    messageBuffers[bufferNumber].addMessage(dropOffEvent);
-
-                } catch (OutlierPointException e) {
+                    if ((route.getDropOffCell() != null) && (route.getPickUpCell() != null)) {
+                        dropOffEvent.setRoute(route);
+                        int bufferNumber = route.hashCode() % messageBuffers.length;
+                        messageBuffers[bufferNumber].addMessage(dropOffEvent);
+                    }
 
                 } catch (Exception e) {
                     errorLines++;
@@ -103,7 +105,7 @@ public class RouteEventEmitter implements Adaptor {
         this.numberOfThreads = Integer.parseInt(parameterMap.get("threads"));
     }
 
-    private Cell getCell(double longitude, double latitude) throws OutlierPointException {
+    private Cell getCell(double longitude, double latitude) {
         if ((longitude < Constants.RIGHT_LONGITUDE) && (longitude > Constants.LEFT_LONGITUDE) &&
                 (latitude < Constants.TOP_LATITUDE) && (latitude > Constants.BOTTOM_LATITUDE)) {
 
@@ -112,13 +114,12 @@ public class RouteEventEmitter implements Adaptor {
             return new Cell(column, row);
 
         } else {
-            throw new OutlierPointException(" longitude " + latitude + " latitude " + latitude + " lies out side");
+            return null;
         }
     }
 
 
     public static void main(String[] args) {
-        String fileName = "data/sorted_data.csv";
         TopRouteProcessor topRouteProcessor = new TopRouteProcessor();
         int numberOfBuffers = 2;
         //initialize buffers
@@ -126,7 +127,7 @@ public class RouteEventEmitter implements Adaptor {
         for (int i = 0; i < messageBuffers.length; i++) {
             messageBuffers[i] = new MessageBuffer(new RouteProcessor(topRouteProcessor));
         }
-        new RouteEventEmitter().loadData(fileName, messageBuffers);
+        new RouteEventEmitter().loadData(args[0], messageBuffers);
         topRouteProcessor.close();
     }
 }
