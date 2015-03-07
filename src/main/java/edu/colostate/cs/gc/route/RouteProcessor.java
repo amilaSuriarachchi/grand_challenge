@@ -34,6 +34,9 @@ public class RouteProcessor extends TripProcessor {
 
     private Set<Route> lastRouteSet;
 
+    private long threadID = -1;
+
+
     public RouteProcessor() {
         this.lastRouteSet = new HashSet<Route>();
     }
@@ -43,9 +46,7 @@ public class RouteProcessor extends TripProcessor {
         this.lastRouteSet = new HashSet<Route>();
     }
 
-    public synchronized void processEvent(TripEvent event) {
-
-        long startTime = System.nanoTime();
+    public void processEvent(TripEvent event) {
 
         DropOffEvent dropOffEvent = (DropOffEvent) event;
         // Upto here drop off time comes as a string. convert it to milliseconds.
