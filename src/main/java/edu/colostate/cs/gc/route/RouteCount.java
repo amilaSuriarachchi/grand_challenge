@@ -18,16 +18,16 @@ import java.io.IOException;
 public class RouteCount implements NodeValue {
 
     private int count;
-    private long updatedTime;
+    private int seqNo;
     private Route route;
 
     public RouteCount() {
     }
 
-    public RouteCount(int count, Route route, long updatedTime) {
+    public RouteCount(int count, Route route, int seqNo) {
         this.count = count;
         this.route = route;
-        this.updatedTime = updatedTime;
+        this.seqNo = seqNo;
     }
 
     public void incrementCount(){
@@ -50,9 +50,9 @@ public class RouteCount implements NodeValue {
             return -1;
         } else {
             // i.e counts are equal we need to check for updated times
-            if (this.updatedTime > routeCount.updatedTime){
+            if (this.seqNo > routeCount.seqNo){
                 return 1;
-            } else if (this.updatedTime < routeCount.updatedTime){
+            } else if (this.seqNo < routeCount.seqNo){
                 return -1;
             }  else {
                 return 0;
@@ -64,7 +64,7 @@ public class RouteCount implements NodeValue {
     public void serialize(DataOutput dataOutput) throws MessageProcessingException {
         try {
             dataOutput.writeInt(this.count);
-            dataOutput.writeLong(this.updatedTime);
+            dataOutput.writeInt(this.seqNo);
             this.route.serialize(dataOutput);
         } catch (IOException e) {
             throw new MessageProcessingException("Can not write the message ");
@@ -75,7 +75,7 @@ public class RouteCount implements NodeValue {
     public void parse(DataInput dataInput) throws MessageProcessingException {
         try {
             this.count = dataInput.readInt();
-            this.updatedTime = dataInput.readLong();
+            this.seqNo = dataInput.readInt();
             this.route = new Route();
             this.route.parse(dataInput);
         } catch (IOException e) {
@@ -92,37 +92,13 @@ public class RouteCount implements NodeValue {
         return route;
     }
 
-    public void setCount(int count) {
-        this.count = count;
+    public int getSeqNo() {
+        return seqNo;
     }
 
-    public long getUpdatedTime() {
-        return updatedTime;
+    public void setSeqNo(int seqNo) {
+        this.seqNo = seqNo;
     }
-
-    public void setUpdatedTime(long updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    //    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//
-//        RouteCount that = (RouteCount) o;
-//
-//        if (!route.equals(that.route)) return false;
-//
-//        return true;
-//    }
-
-
-
-//    @Override
-//    public int hashCode() {
-//        return route.hashCode();
-//    }
-
 
     @Override
     public boolean equals(Object o) {
@@ -132,6 +108,7 @@ public class RouteCount implements NodeValue {
         RouteCount that = (RouteCount) o;
 
         if (count != that.count) return false;
+        if (seqNo != that.seqNo) return false;
         if (!route.equals(that.route)) return false;
 
         return true;
@@ -140,6 +117,7 @@ public class RouteCount implements NodeValue {
     @Override
     public int hashCode() {
         int result = count;
+        result = 31 * result + (int) (seqNo ^ (seqNo >>> 32));
         result = 31 * result + route.hashCode();
         return result;
     }

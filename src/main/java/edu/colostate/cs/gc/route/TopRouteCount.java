@@ -18,28 +18,17 @@ import java.io.IOException;
 public class TopRouteCount implements NodeValue {
 
     private int count;
-    private long updatedTime;
+    //this is the event sequence number this pirticular route is updated last.
+    private int seqNo;
     private Route route;
 
     public TopRouteCount() {
     }
 
-    public TopRouteCount(int count, Route route, long updatedTime) {
+    public TopRouteCount(int count, Route route, int seqNo) {
         this.count = count;
         this.route = route;
-        this.updatedTime = updatedTime;
-    }
-
-    public void incrementCount(){
-        this.count++;
-    }
-
-    public void decrementCount(){
-        this.count--;
-    }
-
-    public boolean isEmpty(){
-        return this.count == 0;
+        this.seqNo = seqNo;
     }
 
     public int compare(NodeValue value) {
@@ -50,9 +39,9 @@ public class TopRouteCount implements NodeValue {
             return -1;
         } else {
             // i.e counts are equal we need to check for updated times
-            if (this.updatedTime > topRouteCount.updatedTime){
+            if (this.seqNo > topRouteCount.seqNo){
                 return 1;
-            } else if (this.updatedTime < topRouteCount.updatedTime){
+            } else if (this.seqNo < topRouteCount.seqNo){
                 return -1;
             }  else {
                 return 0;
@@ -64,7 +53,7 @@ public class TopRouteCount implements NodeValue {
     public void serialize(DataOutput dataOutput) throws MessageProcessingException {
         try {
             dataOutput.writeInt(this.count);
-            dataOutput.writeLong(this.updatedTime);
+            dataOutput.writeInt(this.seqNo);
             this.route.serialize(dataOutput);
         } catch (IOException e) {
             throw new MessageProcessingException("Can not write the message ");
@@ -75,7 +64,7 @@ public class TopRouteCount implements NodeValue {
     public void parse(DataInput dataInput) throws MessageProcessingException {
         try {
             this.count = dataInput.readInt();
-            this.updatedTime = dataInput.readLong();
+            this.seqNo = dataInput.readInt();
             this.route = new Route();
             this.route.parse(dataInput);
         } catch (IOException e) {
@@ -96,12 +85,12 @@ public class TopRouteCount implements NodeValue {
         this.count = count;
     }
 
-    public long getUpdatedTime() {
-        return updatedTime;
+    public int getSeqNo() {
+        return seqNo;
     }
 
-    public void setUpdatedTime(long updatedTime) {
-        this.updatedTime = updatedTime;
+    public void setSeqNo(int seqNo) {
+        this.seqNo = seqNo;
     }
 
 

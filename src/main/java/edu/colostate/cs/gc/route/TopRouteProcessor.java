@@ -7,13 +7,13 @@ import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
 import edu.colostate.cs.gc.process.TripProcessor;
 import edu.colostate.cs.gc.util.Util;
+import edu.colostate.cs.worker.api.Container;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,6 +34,9 @@ public class TopRouteProcessor extends TripProcessor {
 
     private int eventsWritten = 0;
 
+    private int numbOfProcessors;
+    private List<Queue<TopRoutesEvent>> queues;
+
     public TopRouteProcessor() {
         this.nodeList = new NodeList();
         try {
@@ -44,9 +47,63 @@ public class TopRouteProcessor extends TripProcessor {
 
     }
 
-    public synchronized void processEvent(TripEvent event) {
+    public TopRouteProcessor(int numbOfProcessors) {
+        this();
+        this.numbOfProcessors = numbOfProcessors;
+        initializeQueues();
+    }
 
+    @Override
+    public void initialise(Container container, Map<String, String> parameters) {
+        super.initialise(container, parameters);
+
+        this.numbOfProcessors = Integer.parseInt(parameters.get("processors"));
+
+        initializeQueues();
+    }
+
+    private void initializeQueues() {
+
+        this.queues = new ArrayList<Queue<TopRoutesEvent>>(this.numbOfProcessors);
+        for (int i = 0; i < this.numbOfProcessors; i++) {
+            this.queues.add(new LinkedList<TopRoutesEvent>());
+        }
+    }
+
+    public synchronized void processEvent(TripEvent event) {
         TopRoutesEvent topRoutesEvent = (TopRoutesEvent) event;
+        this.queues.get(topRoutesEvent.getProcessorID()).add(topRoutesEvent);
+
+        int minIndex = 0;
+        int minSeq = 0;
+
+        while (!isEmpty()) {
+            minIndex = 0;
+            minSeq = this.queues.get(0).peek().getSeqNo();
+            for (int i = 1; i < this.numbOfProcessors; i++) {
+                if (this.queues.get(i).peek().getSeqNo() < minSeq) {
+                    minIndex = i;
+                    minSeq = this.queues.get(i).peek().getSeqNo();
+                }
+            }
+            processOrderedMessage(this.queues.get(minIndex).poll());
+        }
+    }
+
+    private boolean isEmpty() {
+        boolean isEmpty = false;
+        for (Queue<TopRoutesEvent> queue : this.queues) {
+            if (queue.isEmpty()) {
+                isEmpty = true;
+                break;
+            }
+        }
+        return isEmpty;
+    }
+
+    private void processOrderedMessage(TopRoutesEvent topRoutesEvent) {
+
+        //check the sequence
         List<NodeValue> preList = this.nodeList.getTopValues();
 
         // remove old routes
@@ -59,31 +116,37 @@ public class TopRouteProcessor extends TripProcessor {
 
             if (!this.nodeList.containsKey(routeCount.getRoute())) {
                 // need to create a new object to avoid conflicts with earlier process objects.
-                this.nodeList.add(routeCount.getRoute(),routeCount);
+                this.nodeList.add(routeCount.getRoute(), routeCount);
             } else {
                 TopRouteCount existingValue = (TopRouteCount) this.nodeList.get(routeCount.getRoute());
                 if (routeCount.getCount() < existingValue.getCount()) {
                     existingValue.setCount(routeCount.getCount());
-                    existingValue.setUpdatedTime(routeCount.getUpdatedTime());
+                    existingValue.setSeqNo(routeCount.getSeqNo());
                     //if the new value is less it has to move further down.
                     this.nodeList.incrementPosition(routeCount.getRoute());
                 } else if (routeCount.getCount() > existingValue.getCount()) {
                     existingValue.setCount(routeCount.getCount());
-                    existingValue.setUpdatedTime(routeCount.getUpdatedTime());
+                    existingValue.setSeqNo(routeCount.getSeqNo());
+                    this.nodeList.decrementPosition(routeCount.getRoute());
+                } else {
+                    // still need to set the last updated time.
+                    existingValue.setSeqNo(routeCount.getSeqNo());
                     this.nodeList.decrementPosition(routeCount.getRoute());
                 }
             }
         }
 
+
+
         List<NodeValue> newList = this.nodeList.getTopValues();
         if (!Util.isSame(preList, newList)) {
             generateRouteChangeEvent(topRoutesEvent.getStartTime(),
-                    topRoutesEvent.getPickUpTime(), topRoutesEvent.getDropOffTime(), nodeList.getTopValues());
+                    topRoutesEvent.getPickUpTime(), topRoutesEvent.getDropOffTime(), nodeList.getTopValues(), topRoutesEvent.getProcessorID());
             this.eventsWritten++;
         }
     }
 
-    public void generateRouteChangeEvent(long startTime, String pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {
+    public void generateRouteChangeEvent(long startTime, String pickUpTime, long dropOffTime, List<NodeValue> nodeValues, int processID) {
 
         try {
             long delay = System.currentTimeMillis() - startTime;
@@ -91,12 +154,14 @@ public class TopRouteProcessor extends TripProcessor {
             this.numOfEvents++;
 
             this.eventWriter.write(pickUpTime + ",");
-            this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
+//            this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
+            this.eventWriter.write(dropOffTime + ",");
+//            this.eventWriter.write(processID + ",");
             for (NodeValue nodeValue : nodeValues) {
                 TopRouteCount routeCount = (TopRouteCount) nodeValue;
                 this.eventWriter.write(routeCount.getRoute().toString());
             }
-            this.eventWriter.write(delay + "");
+//            this.eventWriter.write(delay + "");
             this.eventWriter.newLine();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -105,13 +170,42 @@ public class TopRouteProcessor extends TripProcessor {
 
     public void close() {
 
-        System.out.println("Event received ==> " + this.eventsWritten);
         System.out.println("Avg Delay ==> " + this.avgDelay);
+        flushExistingMessages();
+        System.out.println("Event received ==> " + this.eventsWritten);
+
         try {
             this.eventWriter.flush();
             this.eventWriter.close();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+    }
+
+    private void flushExistingMessages() {
+        int minIndex;
+        int minSeq;
+        while (isOneNotEmpty()) {
+            minIndex = Integer.MIN_VALUE;
+            minSeq = Integer.MAX_VALUE;
+            for (int i = 0; i < this.numbOfProcessors; i++) {
+                if (!this.queues.get(i).isEmpty() && (this.queues.get(i).peek().getSeqNo() < minSeq)) {
+                    minIndex = i;
+                    minSeq = this.queues.get(i).peek().getSeqNo();
+                }
+            }
+            processOrderedMessage(this.queues.get(minIndex).poll());
+        }
+    }
+
+    private boolean isOneNotEmpty() {
+        boolean isOneNotEmpty = false;
+        for (Queue<TopRoutesEvent> queue : this.queues) {
+            if (!queue.isEmpty()) {
+                isOneNotEmpty = true;
+                break;
+            }
+        }
+        return isOneNotEmpty;
     }
 }

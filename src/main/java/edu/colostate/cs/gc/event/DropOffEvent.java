@@ -22,8 +22,9 @@ public class DropOffEvent extends TripEvent {
     private long startTime;
     private long dropOffTimeMillis;
 
-    private Route route;
+    private int seqNo;
 
+    private Route route;
 
     public boolean isExpired(long lastEventTime) {
         return lastEventTime - this.dropOffTimeMillis > Constants.LARGE_WINDOW_SIZE;
@@ -40,6 +41,7 @@ public class DropOffEvent extends TripEvent {
             dataOutput.writeUTF(this.pickUpTime);
             dataOutput.writeUTF(this.dropOffTime);
             dataOutput.writeLong(this.startTime);
+            dataOutput.writeInt(this.seqNo);
             this.route.serialize(dataOutput);
         } catch (IOException e) {
             throw new MessageProcessingException("Can not write the message ");
@@ -52,6 +54,7 @@ public class DropOffEvent extends TripEvent {
             this.pickUpTime = dataInput.readUTF();
             this.dropOffTime = dataInput.readUTF();
             this.startTime = dataInput.readLong();
+            this.seqNo = dataInput.readInt();
             this.route = new Route();
             this.route.parse(dataInput);
         } catch (IOException e) {
@@ -97,5 +100,13 @@ public class DropOffEvent extends TripEvent {
 
     public void setStartTime(long startTime) {
         this.startTime = startTime;
+    }
+
+    public int getSeqNo() {
+        return seqNo;
+    }
+
+    public void setSeqNo(int seqNo) {
+        this.seqNo = seqNo;
     }
 }

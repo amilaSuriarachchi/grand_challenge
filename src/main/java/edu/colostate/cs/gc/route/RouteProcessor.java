@@ -34,16 +34,16 @@ public class RouteProcessor extends TripProcessor {
 
     private Set<Route> lastRouteSet;
 
-    private long threadID = -1;
-
+    private int numOfProcessors;
 
     public RouteProcessor() {
         this.lastRouteSet = new HashSet<Route>();
     }
 
-    public RouteProcessor(TripProcessor processor) {
+    public RouteProcessor(TripProcessor processor, int numOfProcessors) {
         this.processor = processor;
         this.lastRouteSet = new HashSet<Route>();
+        this.numOfProcessors = numOfProcessors;
     }
 
     public void processEvent(TripEvent event) {
@@ -57,16 +57,22 @@ public class RouteProcessor extends TripProcessor {
             this.startTime = dropOffEvent.getDropOffTimeMillis();
         }
 
-        List<NodeValue> preList = nodeList.getTopValues();
+        List<NodeValue> tempPreList = nodeList.getTopValues();
+
+        List<NodeValue> preList = new ArrayList<NodeValue>();
+        for (NodeValue nodeValue : tempPreList){
+            RouteCount routeCount = (RouteCount) nodeValue;
+            preList.add(new RouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getSeqNo()));
+        }
 
         this.window.add(dropOffEvent);
         // whether the current top ten events get changed.
         if (!this.nodeList.containsKey(dropOffEvent.getRoute())) {
-            this.nodeList.add(dropOffEvent.getRoute(), new RouteCount(1, dropOffEvent.getRoute(), dropOffEvent.getDropOffTimeMillis()));
+            this.nodeList.add(dropOffEvent.getRoute(), new RouteCount(1, dropOffEvent.getRoute(), dropOffEvent.getSeqNo()));
         } else {
             RouteCount routeCount = (RouteCount) this.nodeList.get(dropOffEvent.getRoute());
             routeCount.incrementCount();
-            routeCount.setUpdatedTime(dropOffEvent.getDropOffTimeMillis());
+            routeCount.setSeqNo(dropOffEvent.getSeqNo());
             // after increasing the count we need to move this element towards the head. i.e reduce position.
             this.nodeList.decrementPosition(dropOffEvent.getRoute());
         }
@@ -76,6 +82,7 @@ public class RouteProcessor extends TripProcessor {
             DropOffEvent expiredEvent = this.window.poll();
             RouteCount routeCount = (RouteCount) this.nodeList.get(expiredEvent.getRoute());
             routeCount.decrementCount();
+            // we don't need to change the update time. since
             if (routeCount.isEmpty()) {
                 this.nodeList.remove(expiredEvent.getRoute());
             } else {
@@ -88,8 +95,14 @@ public class RouteProcessor extends TripProcessor {
         if (!Util.isSame(preList, currentList) && (dropOffEvent.getDropOffTimeMillis() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
             Set<Route> currentRoutSet = getRouteSet(currentList);
             this.lastRouteSet.removeAll(currentRoutSet);
-            generateRouteChangeEvent(dropOffEvent.getStartTime(), dropOffEvent.getPickUpTime(),
-                    dropOffEvent.getDropOffTimeMillis(), this.lastRouteSet, currentList);
+            generateRouteChangeEvent(dropOffEvent.getStartTime(),
+                    dropOffEvent.getPickUpTime(),
+                    dropOffEvent.getDropOffTimeMillis(),
+                    this.lastRouteSet,
+                    currentList,
+                    dropOffEvent.getKey().hashCode() % this.numOfProcessors,
+                    dropOffEvent.getSeqNo());
+
             this.lastRouteSet = getRouteSet(currentList);
 
         }
@@ -105,13 +118,17 @@ public class RouteProcessor extends TripProcessor {
                                          String pickUpTime,
                                          long dropOffTime,
                                          Set<Route> removedRoutes,
-                                         List<NodeValue> newRoutes) {
+                                         List<NodeValue> newRoutes,
+                                         int processID,
+                                         int seqNo) {
         TopRoutesEvent topRoutesEvent = new TopRoutesEvent(startTime, pickUpTime, dropOffTime);
         topRoutesEvent.setRemovedRoutes(removedRoutes);
+        topRoutesEvent.setProcessorID(processID);
+        topRoutesEvent.setSeqNo(seqNo);
         for (NodeValue nodeValue : newRoutes){
             RouteCount routeCount = (RouteCount) nodeValue;
             topRoutesEvent.addRouteCount(
-                    new TopRouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getUpdatedTime()));
+                    new TopRouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getSeqNo()));
         }
         this.processor.processEvent(topRoutesEvent);
     }

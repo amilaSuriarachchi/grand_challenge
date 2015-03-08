@@ -36,7 +36,7 @@ public class LocalRouteProcessor extends TripProcessor {
         this.numOfProcessors = Integer.parseInt(parameters.get("processors"));
         this.processors = new RouteProcessor[this.numOfProcessors];
         for (int i = 0; i < this.numOfProcessors; i++) {
-            this.processors[i] = new RouteProcessor(this.processor);
+            this.processors[i] = new RouteProcessor(this.processor, this.numOfProcessors);
         }
     }
 }

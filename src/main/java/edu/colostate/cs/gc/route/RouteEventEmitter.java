@@ -41,6 +41,8 @@ public class RouteEventEmitter implements Adaptor {
             long currentTime = System.currentTimeMillis();
             int eventCount = 0;
 
+            int seqNo = 1;
+
             while ((line = bufferedReader.readLine()) != null) {
                 String[] values = line.split(",");
                 try {
@@ -49,6 +51,9 @@ public class RouteEventEmitter implements Adaptor {
                     dropOffEvent.setStartTime(System.currentTimeMillis());
                     dropOffEvent.setPickUpTime(values[2]);
                     dropOffEvent.setDropOffTime(values[3]);
+                    dropOffEvent.setSeqNo(seqNo);
+                    seqNo++;
+
                     Route route = new Route();
                     //this cell processing seems to be taking some time. But lets keep it since this is required
                     //to calculate event.
@@ -120,12 +125,12 @@ public class RouteEventEmitter implements Adaptor {
 
 
     public static void main(String[] args) {
-        TopRouteProcessor topRouteProcessor = new TopRouteProcessor();
-        int numberOfBuffers = 2;
+        int numberOfBuffers = 1;
+        TopRouteProcessor topRouteProcessor = new TopRouteProcessor(numberOfBuffers);
         //initialize buffers
         MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
         for (int i = 0; i < messageBuffers.length; i++) {
-            messageBuffers[i] = new MessageBuffer(new RouteProcessor(topRouteProcessor));
+            messageBuffers[i] = new MessageBuffer(new RouteProcessor(topRouteProcessor, numberOfBuffers));
         }
         new RouteEventEmitter().loadData(args[0], messageBuffers);
         topRouteProcessor.close();

@@ -26,6 +26,10 @@ public class TopRoutesEvent extends TripEvent {
     private long dropOffTime;
     private long startTime;
 
+    private int processorID;
+    // this is the sequence number of the event which causes this event to fire from RouteProcessor
+    private int seqNo;
+
     private Set<Route> removedRoutes;
     private List<TopRouteCount> newRoutes;
 
@@ -55,6 +59,8 @@ public class TopRoutesEvent extends TripEvent {
             dataOutput.writeUTF(this.pickUpTime);
             dataOutput.writeLong(this.dropOffTime);
             dataOutput.writeLong(this.startTime);
+            dataOutput.writeInt(this.processorID);
+            dataOutput.writeInt(this.seqNo);
 
             dataOutput.writeInt(this.removedRoutes.size());
             for (Route route : this.removedRoutes) {
@@ -76,6 +82,8 @@ public class TopRoutesEvent extends TripEvent {
             this.pickUpTime = dataInput.readUTF();
             this.dropOffTime = dataInput.readLong();
             this.startTime = dataInput.readLong();
+            this.processorID = dataInput.readInt();
+            this.seqNo = dataInput.readInt();
 
             int length = dataInput.readInt();
             this.removedRoutes = new HashSet<Route>();
@@ -134,5 +142,21 @@ public class TopRoutesEvent extends TripEvent {
 
     public void setNewRoutes(List<TopRouteCount> newRoutes) {
         this.newRoutes = newRoutes;
+    }
+
+    public int getProcessorID() {
+        return processorID;
+    }
+
+    public void setProcessorID(int processorID) {
+        this.processorID = processorID;
+    }
+
+    public int getSeqNo() {
+        return seqNo;
+    }
+
+    public void setSeqNo(int seqNo) {
+        this.seqNo = seqNo;
     }
 }
