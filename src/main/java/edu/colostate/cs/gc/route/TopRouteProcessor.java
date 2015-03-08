@@ -37,8 +37,11 @@ public class TopRouteProcessor extends TripProcessor {
     private int numbOfProcessors;
     private List<Queue<TopRoutesEvent>> queues;
 
+    private List<NodeValue> lastRoutesList;
+
     public TopRouteProcessor() {
         this.nodeList = new NodeList();
+        this.lastRoutesList = new ArrayList<NodeValue>();
         try {
             this.eventWriter = new BufferedWriter(new FileWriter("top_routs.txt"));
         } catch (IOException e) {
@@ -56,9 +59,7 @@ public class TopRouteProcessor extends TripProcessor {
     @Override
     public void initialise(Container container, Map<String, String> parameters) {
         super.initialise(container, parameters);
-
         this.numbOfProcessors = Integer.parseInt(parameters.get("processors"));
-
         initializeQueues();
     }
 
@@ -104,7 +105,7 @@ public class TopRouteProcessor extends TripProcessor {
     private void processOrderedMessage(TopRoutesEvent topRoutesEvent) {
 
         //check the sequence
-        List<NodeValue> preList = this.nodeList.getTopValues();
+//        List<NodeValue> preList = this.nodeList.getTopValues();
 
         // remove old routes
         for (Route route : topRoutesEvent.getRemovedRoutes()) {
@@ -136,17 +137,16 @@ public class TopRouteProcessor extends TripProcessor {
             }
         }
 
-
-
         List<NodeValue> newList = this.nodeList.getTopValues();
-        if (!Util.isSame(preList, newList)) {
+        if (!Util.isSame(this.lastRoutesList, newList)) {
             generateRouteChangeEvent(topRoutesEvent.getStartTime(),
-                    topRoutesEvent.getPickUpTime(), topRoutesEvent.getDropOffTime(), nodeList.getTopValues(), topRoutesEvent.getProcessorID());
+                    topRoutesEvent.getPickUpTime(), topRoutesEvent.getDropOffTime(), newList);
             this.eventsWritten++;
         }
+        this.lastRoutesList = newList;
     }
 
-    public void generateRouteChangeEvent(long startTime, String pickUpTime, long dropOffTime, List<NodeValue> nodeValues, int processID) {
+    public void generateRouteChangeEvent(long startTime, String pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {
 
         try {
             long delay = System.currentTimeMillis() - startTime;
@@ -154,14 +154,12 @@ public class TopRouteProcessor extends TripProcessor {
             this.numOfEvents++;
 
             this.eventWriter.write(pickUpTime + ",");
-//            this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
-            this.eventWriter.write(dropOffTime + ",");
-//            this.eventWriter.write(processID + ",");
+            this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
             for (NodeValue nodeValue : nodeValues) {
                 TopRouteCount routeCount = (TopRouteCount) nodeValue;
                 this.eventWriter.write(routeCount.getRoute().toString());
             }
-//            this.eventWriter.write(delay + "");
+            this.eventWriter.write(delay + "");
             this.eventWriter.newLine();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

@@ -121,4 +121,8 @@ public class RouteCount implements NodeValue {
         result = 31 * result + route.hashCode();
         return result;
     }
+
+    public NodeValue getClone() {
+        return new RouteCount(this.count, this.route, this.seqNo);
+    }
 }

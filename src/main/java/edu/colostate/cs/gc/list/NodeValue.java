@@ -7,7 +7,9 @@ package edu.colostate.cs.gc.list;
  * Time: 12:59 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface NodeValue  {
+public interface NodeValue   {
 
     public int compare(NodeValue value);
+
+    public NodeValue getClone();
 }

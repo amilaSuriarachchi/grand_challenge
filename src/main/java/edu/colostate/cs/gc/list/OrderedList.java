@@ -137,7 +137,7 @@ public class OrderedList {
         ListNode currentNode = this.head;
 
         while ((currentNode != null) && (currentNode.getPosition() < HEAD_SIZE)) {
-            nodeValues.add(currentNode.getNodeValue());
+            nodeValues.add(currentNode.getNodeValue().getClone());
             currentNode = currentNode.getNextNode();
         }
         return nodeValues;

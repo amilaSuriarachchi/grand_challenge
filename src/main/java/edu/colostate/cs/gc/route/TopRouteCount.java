@@ -109,6 +109,7 @@ public class TopRouteCount implements NodeValue {
         return route.hashCode();
     }
 
-
-
+    public NodeValue getClone() {
+        return new TopRouteCount(this.count, this.route, this.seqNo);
+    }
 }

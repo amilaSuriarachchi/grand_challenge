@@ -44,4 +44,8 @@ public class CountNode implements NodeValue {
     public String toString() {
         return "(" + this.route + "," + this.value + "),";
     }
+
+    public NodeValue getClone() {
+        return new CountNode(this.value, this.route);
+    }
 }

@@ -33,6 +33,7 @@ public class RouteProcessor extends TripProcessor {
 
 
     private Set<Route> lastRouteSet;
+    private List<NodeValue> lastRouteList;
 
     private int numOfProcessors;
 
@@ -42,8 +43,9 @@ public class RouteProcessor extends TripProcessor {
 
     public RouteProcessor(TripProcessor processor, int numOfProcessors) {
         this.processor = processor;
-        this.lastRouteSet = new HashSet<Route>();
         this.numOfProcessors = numOfProcessors;
+        this.lastRouteSet = new HashSet<Route>();
+        this.lastRouteList = new ArrayList<NodeValue>();
     }
 
     public void processEvent(TripEvent event) {
@@ -57,13 +59,13 @@ public class RouteProcessor extends TripProcessor {
             this.startTime = dropOffEvent.getDropOffTimeMillis();
         }
 
-        List<NodeValue> tempPreList = nodeList.getTopValues();
-
-        List<NodeValue> preList = new ArrayList<NodeValue>();
-        for (NodeValue nodeValue : tempPreList){
-            RouteCount routeCount = (RouteCount) nodeValue;
-            preList.add(new RouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getSeqNo()));
-        }
+//        List<NodeValue> tempPreList = nodeList.getTopValues();
+//
+//        List<NodeValue> preList = new ArrayList<NodeValue>();
+//        for (NodeValue nodeValue : tempPreList){
+//            RouteCount routeCount = (RouteCount) nodeValue;
+//            preList.add(new RouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getSeqNo()));
+//        }
 
         this.window.add(dropOffEvent);
         // whether the current top ten events get changed.
@@ -92,7 +94,7 @@ public class RouteProcessor extends TripProcessor {
 
         List<NodeValue> currentList = this.nodeList.getTopValues();
 
-        if (!Util.isSame(preList, currentList) && (dropOffEvent.getDropOffTimeMillis() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+        if (!Util.isSame(this.lastRouteList, currentList) && (dropOffEvent.getDropOffTimeMillis() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
             Set<Route> currentRoutSet = getRouteSet(currentList);
             this.lastRouteSet.removeAll(currentRoutSet);
             generateRouteChangeEvent(dropOffEvent.getStartTime(),
@@ -103,9 +105,11 @@ public class RouteProcessor extends TripProcessor {
                     dropOffEvent.getKey().hashCode() % this.numOfProcessors,
                     dropOffEvent.getSeqNo());
 
-            this.lastRouteSet = getRouteSet(currentList);
-
+            this.lastRouteSet = currentRoutSet;
         }
+
+        // this can either be inside or outside if statement.
+        this.lastRouteList = currentList;
 
         this.windowAvg = (this.windowAvg * this.numOfMessages + this.window.size()) / (this.numOfMessages + 1);
         this.numOfMessages++;

@@ -25,6 +25,15 @@ public class ProfitCellNode implements NodeValue {
 
     private Set<String> dropTaxis = new HashSet<String>();
 
+    public NodeValue getClone() {
+        ProfitCellNode clone = new ProfitCellNode(this.cell);
+        clone.setProfitability(this.profitability);
+        clone.setMidFare(this.midFare);
+        clone.setNumOfEmptyTaxis(this.numOfEmptyTaxis);
+        clone.setNumOfFares(this.numOfFares);
+        return clone;
+    }
+
     /**
      * this constructor is being created from an drop off event.
      */
@@ -68,12 +77,12 @@ public class ProfitCellNode implements NodeValue {
         if (this.numOfEmptyTaxis > 0) {
             this.numOfEmptyTaxis--;
         }
-        setProfitability();
+        calculateProfitability();
     }
 
     public void increaseEmptyTaxi() {
         this.numOfEmptyTaxis++;
-        setProfitability();
+        calculateProfitability();
     }
 
 
@@ -104,7 +113,7 @@ public class ProfitCellNode implements NodeValue {
                 this.midFare = this.highQueue.poll();
             }
         }
-        setProfitability();
+        calculateProfitability();
     }
 
     public void removeFare(double fare) {
@@ -136,10 +145,10 @@ public class ProfitCellNode implements NodeValue {
                 }
             }
         }
-        setProfitability();
+        calculateProfitability();
     }
 
-    private void setProfitability() {
+    private void calculateProfitability() {
         if (this.numOfEmptyTaxis == 0) {
             this.profitability = UNDEFINED_PROFITABILITY;
         } else {
@@ -188,5 +197,25 @@ public class ProfitCellNode implements NodeValue {
 
     public double getProfitability() {
         return profitability;
+    }
+
+    public void setProfitability(double profitability) {
+        this.profitability = profitability;
+    }
+
+    public void setMidFare(double midFare) {
+        this.midFare = midFare;
+    }
+
+    public void setNumOfEmptyTaxis(int numOfEmptyTaxis) {
+        this.numOfEmptyTaxis = numOfEmptyTaxis;
+    }
+
+    public void setNumOfFares(int numOfFares) {
+        this.numOfFares = numOfFares;
+    }
+
+    public void setDropTaxis(Set<String> dropTaxis) {
+        this.dropTaxis = dropTaxis;
     }
 }
