@@ -45,7 +45,7 @@ public class NodeList {
 
     private void moveTailToHeap() {
         // if the tail position is 10 i.e this list is over sized.
-        if (this.list.getTailPosition() >= OrderedList.HEAD_SIZE) {
+        if (this.list.getTailPosition() >= OrderedList.MAX_NODES) {
             Object key = this.list.getTailKey();
             NodeValue nodeValue = this.list.remove(key);
             this.heap.add(key, nodeValue);

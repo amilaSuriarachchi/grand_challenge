@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class OrderedList {
 
-    public static final int HEAD_SIZE = 10;
+    public static final int MAX_NODES = 10;
 
     private Map<Object, ListNode> keyMap = new HashMap<Object, ListNode>(600);
 
@@ -25,6 +25,9 @@ public class OrderedList {
     private ListNode tail;
     private ListNode head;
 
+    //use a node node count instead of the position at each place to efficient element removal.
+    private int count = 0;
+
     /**
      * Adds a NodeValue to the map.
      *
@@ -34,16 +37,17 @@ public class OrderedList {
      */
     public void add(Object key, NodeValue value) {
         if (this.tail == null) {
-            this.tail = new ListNode(0, value, key);
+            this.tail = new ListNode(value, key);
             this.head = this.tail;
             this.keyMap.put(key, this.tail);
         } else {
-            ListNode listNode = new ListNode(this.tail.getPosition() + 1, value, key);
+            ListNode listNode = new ListNode(value, key);
             listNode.setPreNode(this.tail);
             this.tail.setNextNode(listNode);
             this.keyMap.put(key, listNode);
             this.tail = listNode;
         }
+        this.count++;
     }
 
     /**
@@ -56,13 +60,6 @@ public class OrderedList {
     public NodeValue remove(Object key) {
 
         ListNode listNode = this.keyMap.remove(key);
-        // increment positions of next set of nodes
-        ListNode currentNode = listNode.getNextNode();
-        while (currentNode != null) {
-            // move the position one up.
-            currentNode.decrementPosition();
-            currentNode = currentNode.getNextNode();
-        }
 
         if ((listNode != this.head) && (listNode != this.tail)) {
             listNode.getPreNode().setNextNode(listNode.getNextNode());
@@ -83,6 +80,8 @@ public class OrderedList {
                 this.tail.setNextNode(null);
             }
         }
+
+        this.count--;
         return listNode.getNodeValue();
     }
 
@@ -136,20 +135,35 @@ public class OrderedList {
         List<NodeValue> nodeValues = new ArrayList<NodeValue>();
         ListNode currentNode = this.head;
 
-        while ((currentNode != null) && (currentNode.getPosition() < HEAD_SIZE)) {
+        // this list will keep only maximum of ten values.
+        while (currentNode != null) {
             nodeValues.add(currentNode.getNodeValue().getClone());
             currentNode = currentNode.getNextNode();
         }
         return nodeValues;
     }
 
+    /**
+     * this method only for testing purposes.
+     * @param key
+     * @return
+     */
     public int getPosition(Object key){
-        return this.keyMap.get(key).getPosition();
+        // this method assumes this key is there. i.e there is at least one object
+        ListNode listNode = this.keyMap.get(key);
+        int position = 0;
+        ListNode currentNode = this.head;
+        while (!currentNode.equals(listNode)){
+            position++;
+            currentNode = currentNode.getNextNode();
+
+        }
+        return position;
     }
 
     public boolean isBelongs(NodeValue value){
         // if the tail is null or current position is less than 10 surely we can.
-        if ((this.tail == null) || (tail.getPosition() < (HEAD_SIZE - 1))){
+        if (this.count < MAX_NODES){
             return true;
         } else {
             // if this value is greater than the tail value then we need to insert this to this list a well.
@@ -163,28 +177,23 @@ public class OrderedList {
 
     public boolean checkListConsistency() {
         ListNode currentNode = this.head;
-        int currentPosition = 0;
         boolean isCorrect = true;
         while (currentNode != null) {
-            if ((currentNode.getPosition() != currentPosition) || currentNode.compare(currentNode.getNextNode()) == -1) {
+            if (currentNode.compare(currentNode.getNextNode()) == -1) {
                 isCorrect = false;
             }
             if ((currentNode.getNextNode() != null) && (currentNode.getNextNode().getPreNode() != currentNode)) {
                 isCorrect = false;
             }
             currentNode = currentNode.getNextNode();
-            currentPosition++;
         }
 
-        currentPosition--;
         currentNode = this.tail;
         while (currentNode != null) {
-            if (currentNode.getPosition() != currentPosition) {
-                System.out.println("Error at position " + currentPosition);
+            if ((currentNode.getPreNode() != null) && (currentNode.compare(currentNode.getPreNode()) == 1)) {
                 isCorrect = false;
             }
             currentNode = currentNode.getNextNode();
-            currentPosition--;
         }
         return isCorrect;
     }
@@ -194,7 +203,7 @@ public class OrderedList {
         if (!checkListConsistency()){
             System.out.println("An error");
         }
-        System.out.println("Tail position ==> " + this.tail.getPosition());
+        System.out.println("Tail position ==> " + (this.count - 1));
     }
 
     public int getMapSize(){
@@ -205,7 +214,7 @@ public class OrderedList {
         if (this.tail == null){
             return 0;
         } else {
-            return this.tail.getPosition();
+            return this.count - 1;
         }
     }
 

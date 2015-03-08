@@ -9,15 +9,13 @@ package edu.colostate.cs.gc.list;
  */
 public class ListNode {
 
-    private int position;
     private NodeValue nodeValue;
     private Object key;
 
     private ListNode nextNode;
     private ListNode preNode;
 
-    public ListNode(int position, NodeValue nodeValue, Object key) {
-        this.position = position;
+    public ListNode(NodeValue nodeValue, Object key) {
         this.nodeValue = nodeValue;
         this.key = key;
     }
@@ -42,9 +40,6 @@ public class ListNode {
 
             currentPreNode.nextNode = currentNextNode;
             currentPreNode.preNode = this;
-
-            decrementPosition();
-            this.nextNode.incrementPosition();
 
         }
 
@@ -76,8 +71,6 @@ public class ListNode {
             currentNext.preNode = currentPre;
             currentNext.nextNode = this;
 
-            incrementPosition();
-            currentNext.decrementPosition();
         }
 
         if (this.nextNode == null) {
@@ -97,18 +90,6 @@ public class ListNode {
 
     public Object getKey(){
         return key;
-    }
-
-    public void incrementPosition() {
-        this.position++;
-    }
-
-    public void decrementPosition() {
-        this.position--;
-    }
-
-    public int getPosition() {
-        return position;
     }
 
     public ListNode getNextNode() {
