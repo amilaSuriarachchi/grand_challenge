@@ -2,19 +2,13 @@ package edu.colostate.cs.gc.profit;
 
 import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.event.PaymentEvent;
-import edu.colostate.cs.gc.exception.OutlierPointException;
 import edu.colostate.cs.gc.process.MessageBuffer;
-import edu.colostate.cs.gc.process.TopEventProcessor;
-import edu.colostate.cs.gc.route.RouteProcessor;
-import edu.colostate.cs.gc.route.TopRouteProcessor;
 import edu.colostate.cs.gc.util.Constants;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,11 +31,11 @@ public class ProfitEventEmitter {
             int numberOfBuffers = 4;
             //initialize buffers
             MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
-            ProfitEventWriter profitEventWriter = new ProfitEventWriter("top_profit_cells.txt");
-            TopEventProcessor topEventProcessor = new TopEventProcessor(numberOfBuffers, profitEventWriter);
+            TopProfitProcessor topProfitProcessor = new TopProfitProcessor(numberOfBuffers);
+
 
             for (int i = 0; i < messageBuffers.length; i++) {
-                messageBuffers[i] = new MessageBuffer(new ProfitCalculator(topEventProcessor, numberOfBuffers));
+                messageBuffers[i] = new MessageBuffer(new ProfitCalculator(topProfitProcessor, numberOfBuffers));
             }
 
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
@@ -102,7 +96,7 @@ public class ProfitEventEmitter {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
 
-            topEventProcessor.close();
+            topProfitProcessor.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

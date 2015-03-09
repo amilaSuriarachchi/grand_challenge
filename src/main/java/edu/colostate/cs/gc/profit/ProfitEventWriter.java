@@ -1,14 +1,9 @@
 package edu.colostate.cs.gc.profit;
 
-import edu.colostate.cs.gc.event.TripEvent;
-import edu.colostate.cs.gc.event.TopProfitableEvent;
 import edu.colostate.cs.gc.list.NodeValue;
 import edu.colostate.cs.gc.process.EventWriter;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 

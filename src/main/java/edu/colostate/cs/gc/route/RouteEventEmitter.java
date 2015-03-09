@@ -128,14 +128,13 @@ public class RouteEventEmitter implements Adaptor {
 
     public static void main(String[] args) {
         int numberOfBuffers = 4;
-        EventWriter eventWriter = new TopRouteWriter("top_routes.txt");
-        TopEventProcessor topEventProcessor = new TopEventProcessor(numberOfBuffers, eventWriter);
+        TopRouteProcessor topRouteProcessor = new TopRouteProcessor(numberOfBuffers);
         //initialize buffers
         MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
         for (int i = 0; i < messageBuffers.length; i++) {
-            messageBuffers[i] = new MessageBuffer(new RouteProcessor(topEventProcessor, numberOfBuffers));
+            messageBuffers[i] = new MessageBuffer(new RouteProcessor(topRouteProcessor, numberOfBuffers));
         }
         new RouteEventEmitter().loadData(args[0], messageBuffers);
-        topEventProcessor.close();
+        topRouteProcessor.close();
     }
 }
