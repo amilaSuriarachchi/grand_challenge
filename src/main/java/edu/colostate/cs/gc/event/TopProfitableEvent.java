@@ -17,11 +17,11 @@ import java.util.List;
 public class TopProfitableEvent extends TripEvent {
 
     private long startTime;
-    private long pickTime;
+    private String pickTime;
     private long dropTime;
     private List<NodeValue> profitCells;
 
-    public TopProfitableEvent(long startTime, long pickTime, long dropTime, List<NodeValue> profitCells) {
+    public TopProfitableEvent(long startTime, String pickTime, long dropTime, List<NodeValue> profitCells) {
         this.startTime = startTime;
         this.pickTime = pickTime;
         this.dropTime = dropTime;
@@ -51,11 +51,11 @@ public class TopProfitableEvent extends TripEvent {
         this.startTime = startTime;
     }
 
-    public long getPickTime() {
+    public String getPickTime() {
         return pickTime;
     }
 
-    public void setPickTime(long pickTime) {
+    public void setPickTime(String pickTime) {
         this.pickTime = pickTime;
     }
 

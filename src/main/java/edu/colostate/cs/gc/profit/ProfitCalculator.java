@@ -48,12 +48,15 @@ public class ProfitCalculator extends TripProcessor {
 
         PaymentEvent paymentEvent = (PaymentEvent) event;
 
+        paymentEvent.processDropOffTime();
+
         if (!this.isStarted) {
             this.isStarted = true;
-            this.startTime = paymentEvent.getDropOffTime();
+            this.startTime = paymentEvent.getDropOffTimeMillis();
         }
 
         if (paymentEvent.isPayEvent()) {
+
             this.paymentWindow.add(paymentEvent);
             Cell pickUpNode = paymentEvent.getPickUpCell();
             if (!this.nodeList.containsKey(pickUpNode)) {
@@ -85,7 +88,7 @@ public class ProfitCalculator extends TripProcessor {
             }
 
             while ((this.paymentWindow.size() > 0) &&
-                    (this.paymentWindow.peek().isExpired(paymentEvent.getDropOffTime(), Constants.SMALL_WINDOW_SIZE))) {
+                    (this.paymentWindow.peek().isExpired(paymentEvent.getDropOffTimeMillis(), Constants.SMALL_WINDOW_SIZE))) {
                 PaymentEvent expiredEvent = this.paymentWindow.poll();
                 ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(expiredEvent.getPickUpCell());
                 double preProfitability = profitCellNode.getProfitability();
@@ -125,7 +128,7 @@ public class ProfitCalculator extends TripProcessor {
             }
 
             while ((this.dropWindow.size() > 0)
-                    && (this.dropWindow.peek().isExpired(paymentEvent.getDropOffTime(), Constants.LARGE_WINDOW_SIZE))) {
+                    && (this.dropWindow.peek().isExpired(paymentEvent.getDropOffTimeMillis(), Constants.LARGE_WINDOW_SIZE))) {
                 PaymentEvent expiredEvent = this.dropWindow.poll();
 
                 if (this.nodeList.containsKey(expiredEvent.getDropOffCell())) {
@@ -152,12 +155,12 @@ public class ProfitCalculator extends TripProcessor {
 
         List<NodeValue> currentList = this.nodeList.getTopValues();
         if (!Util.isSame(this.lastCellList, currentList) &&
-                (paymentEvent.getDropOffTime() - this.startTime > Constants.SMALL_WINDOW_SIZE)) {
+                (paymentEvent.getDropOffTimeMillis() - this.startTime > Constants.SMALL_WINDOW_SIZE)) {
             long delay = System.currentTimeMillis() - paymentEvent.getStartTime();
             this.avgDelay = (this.avgDelay * this.numOfEvents + delay) / (this.numOfEvents + 1);
             this.numOfEvents++;
             this.profitEventWriter.processEvent(new TopProfitableEvent(paymentEvent.getStartTime(),
-                    paymentEvent.getPickUpTime(), paymentEvent.getDropOffTime(), this.nodeList.getTopValues()));
+                    paymentEvent.getPickUpTime(), paymentEvent.getDropOffTimeMillis(), this.nodeList.getTopValues()));
         }
         this.lastCellList = currentList;
 

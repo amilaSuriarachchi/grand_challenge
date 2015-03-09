@@ -40,7 +40,7 @@ public class ProfitEventWriter {
         this.avgDelay = (this.avgDelay * this.numOfEvents + delay) / (this.numOfEvents + 1);
         this.numOfEvents++;
         try {
-            this.eventWriter.write(this.simpleDateFormat.format(new Date(topProfitableEvent.getPickTime())) + ",");
+            this.eventWriter.write(topProfitableEvent.getPickTime() + ",");
             this.eventWriter.write(this.simpleDateFormat.format(new Date(topProfitableEvent.getDropTime())) + ",");
             for (NodeValue nodeValue : topProfitableEvent.getProfitCells()) {
                 ProfitCellNode profitCellNode = (ProfitCellNode) nodeValue;

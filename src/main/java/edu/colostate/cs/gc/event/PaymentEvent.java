@@ -1,5 +1,6 @@
 package edu.colostate.cs.gc.event;
 
+import edu.colostate.cs.gc.util.Util;
 import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
 
 import java.io.DataInput;
@@ -17,8 +18,10 @@ public class PaymentEvent extends TripEvent {
     private String medallion;
     private double fare;
     private boolean isPayEvent;
-    private long dropOffTime;
-    private long pickUpTime;
+    private String dropOffTime;
+    private String pickUpTime;
+
+    private long dropOffTimeMillis;
 
     private Cell pickUpCell;
     private Cell dropOffCell;
@@ -26,7 +29,11 @@ public class PaymentEvent extends TripEvent {
     private long startTime;
 
     public boolean isExpired(long lastEventTime, long windowSize) {
-        return (lastEventTime - this.dropOffTime) > windowSize;
+        return (lastEventTime - this.dropOffTimeMillis) > windowSize;
+    }
+
+    public void processDropOffTime(){
+        this.dropOffTimeMillis = Util.getTime(this.dropOffTime);
     }
 
     @Override
@@ -68,19 +75,19 @@ public class PaymentEvent extends TripEvent {
         isPayEvent = payEvent;
     }
 
-    public long getDropOffTime() {
+    public String getDropOffTime() {
         return dropOffTime;
     }
 
-    public void setDropOffTime(long dropOffTime) {
+    public void setDropOffTime(String dropOffTime) {
         this.dropOffTime = dropOffTime;
     }
 
-    public long getPickUpTime() {
+    public String getPickUpTime() {
         return pickUpTime;
     }
 
-    public void setPickUpTime(long pickUpTime) {
+    public void setPickUpTime(String pickUpTime) {
         this.pickUpTime = pickUpTime;
     }
 
@@ -106,5 +113,13 @@ public class PaymentEvent extends TripEvent {
 
     public void setStartTime(long startTime) {
         this.startTime = startTime;
+    }
+
+    public long getDropOffTimeMillis() {
+        return dropOffTimeMillis;
+    }
+
+    public void setDropOffTimeMillis(long dropOffTimeMillis) {
+        this.dropOffTimeMillis = dropOffTimeMillis;
     }
 }
