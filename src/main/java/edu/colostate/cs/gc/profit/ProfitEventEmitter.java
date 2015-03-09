@@ -33,7 +33,7 @@ public class ProfitEventEmitter {
         String fileName = "data/sorted_data.csv";
         try {
 
-            int numberOfBuffers = 1;
+            int numberOfBuffers = 2;
             //initialize buffers
             MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
             for (int i = 0; i < messageBuffers.length; i++) {
@@ -45,12 +45,17 @@ public class ProfitEventEmitter {
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+            int seqNo = 0;
+
             long currentTime = System.currentTimeMillis();
 
             while ((line = bufferedReader.readLine()) != null) {
                 String[] values = line.split(",");
                 try {
                     PaymentEvent pickUpEvent = new PaymentEvent();
+                    pickUpEvent.setSeqNo(seqNo);
+                    seqNo++;
+
                     pickUpEvent.setStartTime(System.currentTimeMillis());
                     pickUpEvent.setMedallion(values[0].trim());
                     pickUpEvent.setPickUpTime(dateFormat.parse(values[2]).getTime());
@@ -63,6 +68,9 @@ public class ProfitEventEmitter {
                     messageBuffers[bufferNumber].addMessage(pickUpEvent);
 
                     PaymentEvent dropOffEvent = new PaymentEvent();
+                    dropOffEvent.setSeqNo(seqNo);
+                    seqNo++;
+
                     dropOffEvent.setStartTime(System.currentTimeMillis());
                     dropOffEvent.setMedallion(pickUpEvent.getMedallion());
                     dropOffEvent.setPickUpTime(pickUpEvent.getPickUpTime());

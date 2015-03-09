@@ -22,8 +22,6 @@ public class DropOffEvent extends TripEvent {
     private long startTime;
     private long dropOffTimeMillis;
 
-    private int seqNo;
-
     private Route route;
 
     public boolean isExpired(long lastEventTime) {
@@ -102,11 +100,4 @@ public class DropOffEvent extends TripEvent {
         this.startTime = startTime;
     }
 
-    public int getSeqNo() {
-        return seqNo;
-    }
-
-    public void setSeqNo(int seqNo) {
-        this.seqNo = seqNo;
-    }
 }

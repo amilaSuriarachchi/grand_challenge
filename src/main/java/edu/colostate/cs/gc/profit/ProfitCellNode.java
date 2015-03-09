@@ -25,24 +25,18 @@ public class ProfitCellNode implements NodeValue {
 
     private Set<String> dropTaxis = new HashSet<String>();
 
-    public NodeValue getClone() {
-        ProfitCellNode clone = new ProfitCellNode(this.cell);
-        clone.setProfitability(this.profitability);
-        clone.setMidFare(this.midFare);
-        clone.setNumOfEmptyTaxis(this.numOfEmptyTaxis);
-        clone.setNumOfFares(this.numOfFares);
-        return clone;
-    }
+    private int seqNo;
 
     /**
      * this constructor is being created from an drop off event.
      */
-    public ProfitCellNode(Cell cell) {
+    public ProfitCellNode(Cell cell, int seqNo) {
         this.profitability = 0;
         this.numOfEmptyTaxis = 1;
         this.midFare = 0;
         this.numOfFares = 0;
         this.cell = cell;
+        this.seqNo = seqNo;
     }
 
     /**
@@ -52,12 +46,13 @@ public class ProfitCellNode implements NodeValue {
      *
      * @param fare
      */
-    public ProfitCellNode(double fare, Cell cell) {
+    public ProfitCellNode(double fare, Cell cell, int seqNo) {
         this.midFare = fare;
         this.numOfFares = 1;
         this.numOfEmptyTaxis = 0;
         this.profitability = UNDEFINED_PROFITABILITY;
         this.cell = cell;
+        this.seqNo = seqNo;
     }
 
     private PriorityQueue<Double> lowQueue = new PriorityQueue<Double>(20, new Comparator<Double>() {
@@ -124,7 +119,7 @@ public class ProfitCellNode implements NodeValue {
             this.midFare = 0;
         } else {
             if (this.numOfFares % 2 == 0) {
-                if (fare == this.midFare){
+                if (fare == this.midFare) {
                     this.midFare = (this.lowQueue.peek() + this.highQueue.peek()) / 2;
                 } else if (fare > this.midFare) {
                     this.highQueue.remove(fare);
@@ -136,7 +131,7 @@ public class ProfitCellNode implements NodeValue {
                     this.midFare = (this.midFare + this.highQueue.peek()) / 2;
                 }
             } else {
-                if (fare > this.midFare){
+                if (fare > this.midFare) {
                     this.highQueue.remove(fare);
                     this.midFare = this.lowQueue.poll();
                 } else {
@@ -161,25 +156,67 @@ public class ProfitCellNode implements NodeValue {
     }
 
     public int compare(NodeValue value) {
-        double newProfitability = ((ProfitCellNode) value).profitability;
-        if (this.profitability > newProfitability){
+
+        ProfitCellNode profitCellNode = (ProfitCellNode) value;
+
+        if (this.profitability > profitCellNode.profitability) {
             return 1;
-        } else if (this.profitability < newProfitability){
+        } else if (this.profitability < profitCellNode.profitability) {
             return -1;
-        }  else {
-            return 0;
+        } else {
+            if (this.seqNo > profitCellNode.seqNo) {
+                return 1;
+            } else if (this.seqNo < profitCellNode.profitability) {
+                return -1;
+            } else {
+                return 0;
+            }
         }
     }
 
-    public boolean containsTaxi(String medallion){
+    public NodeValue getClone() {
+        ProfitCellNode clone = new ProfitCellNode(this.cell, this.seqNo);
+        clone.setProfitability(this.profitability);
+        clone.setMidFare(this.midFare);
+        clone.setNumOfEmptyTaxis(this.numOfEmptyTaxis);
+        clone.setNumOfFares(this.numOfFares);
+        return clone;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ProfitCellNode that = (ProfitCellNode) o;
+
+        if (Double.compare(that.profitability, profitability) != 0) return false;
+        if (seqNo != that.seqNo) return false;
+        if (!cell.equals(that.cell)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        temp = Double.doubleToLongBits(profitability);
+        result = (int) (temp ^ (temp >>> 32));
+        result = 31 * result + cell.hashCode();
+        result = 31 * result + seqNo;
+        return result;
+    }
+
+    public boolean containsTaxi(String medallion) {
         return this.dropTaxis.contains(medallion);
     }
 
-    public void removeTaxi(String medallion){
+    public void removeTaxi(String medallion) {
         this.dropTaxis.remove(medallion);
     }
 
-    public void addTaxi(String medallion){
+    public void addTaxi(String medallion) {
         this.dropTaxis.add(medallion);
     }
 
@@ -217,5 +254,13 @@ public class ProfitCellNode implements NodeValue {
 
     public void setDropTaxis(Set<String> dropTaxis) {
         this.dropTaxis = dropTaxis;
+    }
+
+    public int getSeqNo() {
+        return seqNo;
+    }
+
+    public void setSeqNo(int seqNo) {
+        this.seqNo = seqNo;
     }
 }

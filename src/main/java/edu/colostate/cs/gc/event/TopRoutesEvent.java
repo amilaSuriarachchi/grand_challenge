@@ -27,8 +27,6 @@ public class TopRoutesEvent extends TripEvent {
     private long startTime;
 
     private int processorID;
-    // this is the sequence number of the event which causes this event to fire from RouteProcessor
-    private int seqNo;
 
     private Set<Route> removedRoutes;
     private List<TopRouteCount> newRoutes;
@@ -150,13 +148,5 @@ public class TopRoutesEvent extends TripEvent {
 
     public void setProcessorID(int processorID) {
         this.processorID = processorID;
-    }
-
-    public int getSeqNo() {
-        return seqNo;
-    }
-
-    public void setSeqNo(int seqNo) {
-        this.seqNo = seqNo;
     }
 }

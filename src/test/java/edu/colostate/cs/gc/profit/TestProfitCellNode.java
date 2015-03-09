@@ -16,7 +16,7 @@ import java.util.PriorityQueue;
 public class TestProfitCellNode extends TestCase {
 
     public void testFare() {
-        ProfitCellNode profitCellNode = new ProfitCellNode(20.0, new Cell(2,4));
+        ProfitCellNode profitCellNode = new ProfitCellNode(20.0, new Cell(2,4), 1);
         assertEquals(profitCellNode.getMidFare(), 20.0);
 
         profitCellNode.addFare(25.0);

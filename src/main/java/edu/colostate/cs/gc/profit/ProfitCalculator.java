@@ -10,6 +10,7 @@ import edu.colostate.cs.gc.process.TripProcessor;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -36,8 +37,11 @@ public class ProfitCalculator extends TripProcessor {
 
     private ProfitEventWriter profitEventWriter;
 
+    private List<NodeValue> lastCellList;
+
     public ProfitCalculator() {
         this.profitEventWriter = new ProfitEventWriter();
+        this.lastCellList = new ArrayList<NodeValue>();
     }
 
     public void processEvent(TripEvent event) {
@@ -49,18 +53,18 @@ public class ProfitCalculator extends TripProcessor {
             this.startTime = paymentEvent.getDropOffTime();
         }
 
-        List<NodeValue> preList = nodeList.getTopValues();
         if (paymentEvent.isPayEvent()) {
             this.paymentWindow.add(paymentEvent);
             Cell pickUpNode = paymentEvent.getPickUpCell();
             if (!this.nodeList.containsKey(pickUpNode)) {
                 // if there is no entry in the nodeList then any taxi drop has not been arrived at this position. So
                 // no need to reduce the empty taxis
-                ProfitCellNode profitCellNode = new ProfitCellNode(paymentEvent.getFare(), pickUpNode);
+                ProfitCellNode profitCellNode = new ProfitCellNode(paymentEvent.getFare(), pickUpNode, paymentEvent.getSeqNo());
                 //this node does not have a profitability so it won't make any change to top nodes.
                 this.nodeList.add(pickUpNode, profitCellNode);
             } else {
                 ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(pickUpNode);
+                profitCellNode.setSeqNo(paymentEvent.getSeqNo());
                 double preProfitability = profitCellNode.getProfitability();
                 profitCellNode.addFare(paymentEvent.getFare());
 
@@ -73,6 +77,8 @@ public class ProfitCalculator extends TripProcessor {
                 if (preProfitability > profitCellNode.getProfitability()) {
                     this.nodeList.incrementPosition(pickUpNode);
                 } else {
+                    // we need to decrement the position if profitability is higher or equal since
+                    // sequence number has changed.
                     this.nodeList.decrementPosition(pickUpNode);
                 }
 
@@ -84,6 +90,10 @@ public class ProfitCalculator extends TripProcessor {
                 ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(expiredEvent.getPickUpCell());
                 double preProfitability = profitCellNode.getProfitability();
                 profitCellNode.removeFare(expiredEvent.getFare());
+
+                // here we calculate the profit for the pick up cell. we don't need to do any thing to empty taxis at
+                // this point.since this taxi already gone from this cell.
+
                 if (profitCellNode.isEmpty()) {
                     this.nodeList.remove(expiredEvent.getPickUpCell());
                 } else {
@@ -102,13 +112,13 @@ public class ProfitCalculator extends TripProcessor {
             Cell dropOffNode = paymentEvent.getDropOffCell();
 
             if (!this.nodeList.containsKey(dropOffNode)) {
-                ProfitCellNode profitCellNode = new ProfitCellNode(dropOffNode);
+                ProfitCellNode profitCellNode = new ProfitCellNode(dropOffNode, paymentEvent.getSeqNo());
                 profitCellNode.addTaxi(paymentEvent.getMedallion());
                 this.nodeList.add(dropOffNode, profitCellNode);
-                // we need to decrement the position since it added as last node and there can be -1 profitability nodes
-                this.nodeList.decrementPosition(dropOffNode);
+                // when adding a node node list structure take care about the position.
             } else {
                 ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(dropOffNode);
+                profitCellNode.setSeqNo(paymentEvent.getSeqNo());
                 profitCellNode.addTaxi(paymentEvent.getMedallion());
                 profitCellNode.increaseEmptyTaxi();
                 this.nodeList.incrementPosition(dropOffNode);
@@ -141,14 +151,15 @@ public class ProfitCalculator extends TripProcessor {
         }
 
         List<NodeValue> currentList = this.nodeList.getTopValues();
-        if (!Util.isSame(preList, currentList) &&
-                (paymentEvent.getDropOffTime() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+        if (!Util.isSame(this.lastCellList, currentList) &&
+                (paymentEvent.getDropOffTime() - this.startTime > Constants.SMALL_WINDOW_SIZE)) {
             long delay = System.currentTimeMillis() - paymentEvent.getStartTime();
             this.avgDelay = (this.avgDelay * this.numOfEvents + delay) / (this.numOfEvents + 1);
             this.numOfEvents++;
             this.profitEventWriter.processEvent(new TopProfitableEvent(paymentEvent.getStartTime(),
                     paymentEvent.getPickUpTime(), paymentEvent.getDropOffTime(), this.nodeList.getTopValues()));
         }
+        this.lastCellList = currentList;
 
     }
 

@@ -125,7 +125,7 @@ public class RouteEventEmitter implements Adaptor {
 
 
     public static void main(String[] args) {
-        int numberOfBuffers = 4;
+        int numberOfBuffers = 2;
         TopRouteProcessor topRouteProcessor = new TopRouteProcessor(numberOfBuffers);
         //initialize buffers
         MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
