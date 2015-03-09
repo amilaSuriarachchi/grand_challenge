@@ -31,6 +31,16 @@ public class TopRouteCount implements NodeValue {
         this.seqNo = seqNo;
     }
 
+    public Object getKey() {
+        return this.route;
+    }
+
+    public void update(NodeValue value) {
+        TopRouteCount newValue = (TopRouteCount) value;
+        this.count = newValue.count;
+        this.seqNo = newValue.seqNo;
+    }
+
     public int compare(NodeValue value) {
         TopRouteCount topRouteCount = (TopRouteCount) value;
         if (this.count > topRouteCount.count){

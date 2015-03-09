@@ -11,5 +11,10 @@ public interface NodeValue   {
 
     public int compare(NodeValue value);
 
+    public Object getKey();
+
+    public void update(NodeValue value);
+
     public NodeValue getClone();
+
 }

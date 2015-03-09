@@ -4,6 +4,7 @@ import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.event.PaymentEvent;
 import edu.colostate.cs.gc.exception.OutlierPointException;
 import edu.colostate.cs.gc.process.MessageBuffer;
+import edu.colostate.cs.gc.process.TopEventProcessor;
 import edu.colostate.cs.gc.route.RouteProcessor;
 import edu.colostate.cs.gc.route.TopRouteProcessor;
 import edu.colostate.cs.gc.util.Constants;
@@ -36,8 +37,11 @@ public class ProfitEventEmitter {
             int numberOfBuffers = 4;
             //initialize buffers
             MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
+            ProfitEventWriter profitEventWriter = new ProfitEventWriter("top_profit_cells.txt");
+            TopEventProcessor topEventProcessor = new TopEventProcessor(numberOfBuffers, profitEventWriter);
+
             for (int i = 0; i < messageBuffers.length; i++) {
-                messageBuffers[i] = new MessageBuffer(new ProfitCalculator());
+                messageBuffers[i] = new MessageBuffer(new ProfitCalculator(topEventProcessor, numberOfBuffers));
             }
 
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
@@ -83,7 +87,6 @@ public class ProfitEventEmitter {
 
                     bufferNumber = dropOffEvent.getDropOffCell().hashCode() % numberOfBuffers;
                     messageBuffers[bufferNumber].addMessage(dropOffEvent);
-
                 }
             }
 
@@ -92,6 +95,14 @@ public class ProfitEventEmitter {
             }
 
             System.out.println("Total time (ms) " + (System.currentTimeMillis() - currentTime));
+
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+
+            topEventProcessor.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

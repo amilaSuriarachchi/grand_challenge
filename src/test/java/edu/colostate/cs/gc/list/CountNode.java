@@ -17,6 +17,14 @@ public class CountNode implements NodeValue {
         this.route = route;
     }
 
+    public Object getKey() {
+        return this.route;
+    }
+
+    public void update(NodeValue value) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     public void setValue(int value) {
         this.value = value;
     }

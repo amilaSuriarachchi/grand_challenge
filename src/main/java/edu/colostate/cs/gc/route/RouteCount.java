@@ -42,6 +42,16 @@ public class RouteCount implements NodeValue {
         return this.count == 0;
     }
 
+    public Object getKey() {
+        return this.route;
+    }
+
+    public void update(NodeValue value) {
+        RouteCount newValue = (RouteCount) value;
+        this.count = newValue.count;
+        this.seqNo = newValue.seqNo;
+    }
+
     public int compare(NodeValue value) {
         RouteCount routeCount = (RouteCount) value;
         if (this.count > routeCount.count){

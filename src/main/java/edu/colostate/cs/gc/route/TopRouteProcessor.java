@@ -104,46 +104,44 @@ public class TopRouteProcessor extends TripProcessor {
 
     private void processOrderedMessage(TopRoutesEvent topRoutesEvent) {
 
-        //check the sequence
-//        List<NodeValue> preList = this.nodeList.getTopValues();
 
-        // remove old routes
-        for (Route route : topRoutesEvent.getRemovedRoutes()) {
-            this.nodeList.remove(route);
-        }
-
-        // add new values
-        for (TopRouteCount routeCount : topRoutesEvent.getNewRoutes()) {
-
-            if (!this.nodeList.containsKey(routeCount.getRoute())) {
-                // need to create a new object to avoid conflicts with earlier process objects.
-                this.nodeList.add(routeCount.getRoute(), routeCount);
-            } else {
-                TopRouteCount existingValue = (TopRouteCount) this.nodeList.get(routeCount.getRoute());
-                if (routeCount.getCount() < existingValue.getCount()) {
-                    existingValue.setCount(routeCount.getCount());
-                    existingValue.setSeqNo(routeCount.getSeqNo());
-                    //if the new value is less it has to move further down.
-                    this.nodeList.incrementPosition(routeCount.getRoute());
-                } else if (routeCount.getCount() > existingValue.getCount()) {
-                    existingValue.setCount(routeCount.getCount());
-                    existingValue.setSeqNo(routeCount.getSeqNo());
-                    this.nodeList.decrementPosition(routeCount.getRoute());
-                } else {
-                    // still need to set the last updated time.
-                    existingValue.setSeqNo(routeCount.getSeqNo());
-                    this.nodeList.decrementPosition(routeCount.getRoute());
-                }
-            }
-        }
-
-        List<NodeValue> newList = this.nodeList.getTopValues();
-        if (!Util.isSame(this.lastRoutesList, newList)) {
-            generateRouteChangeEvent(topRoutesEvent.getStartTime(),
-                    topRoutesEvent.getPickUpTime(), topRoutesEvent.getDropOffTime(), newList);
-            this.eventsWritten++;
-        }
-        this.lastRoutesList = newList;
+//        // remove old routes
+//        for (Route route : topRoutesEvent.getRemovedRoutes()) {
+//            this.nodeList.remove(route);
+//        }
+//
+//        // add new values
+//        for (TopRouteCount routeCount : topRoutesEvent.getNewRoutes()) {
+//
+//            if (!this.nodeList.containsKey(routeCount.getRoute())) {
+//                // need to create a new object to avoid conflicts with earlier process objects.
+//                this.nodeList.add(routeCount.getRoute(), routeCount);
+//            } else {
+//                TopRouteCount existingValue = (TopRouteCount) this.nodeList.get(routeCount.getRoute());
+//                if (routeCount.getCount() < existingValue.getCount()) {
+//                    existingValue.setCount(routeCount.getCount());
+//                    existingValue.setSeqNo(routeCount.getSeqNo());
+//                    //if the new value is less it has to move further down.
+//                    this.nodeList.incrementPosition(routeCount.getRoute());
+//                } else if (routeCount.getCount() > existingValue.getCount()) {
+//                    existingValue.setCount(routeCount.getCount());
+//                    existingValue.setSeqNo(routeCount.getSeqNo());
+//                    this.nodeList.decrementPosition(routeCount.getRoute());
+//                } else {
+//                    // still need to set the last updated time.
+//                    existingValue.setSeqNo(routeCount.getSeqNo());
+//                    this.nodeList.decrementPosition(routeCount.getRoute());
+//                }
+//            }
+//        }
+//
+//        List<NodeValue> newList = this.nodeList.getTopValues();
+//        if (!Util.isSame(this.lastRoutesList, newList)) {
+//            generateRouteChangeEvent(topRoutesEvent.getStartTime(),
+//                    topRoutesEvent.getPickUpTime(), topRoutesEvent.getDropOffTime(), newList);
+//            this.eventsWritten++;
+//        }
+//        this.lastRoutesList = newList;
     }
 
     public void generateRouteChangeEvent(long startTime, String pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {

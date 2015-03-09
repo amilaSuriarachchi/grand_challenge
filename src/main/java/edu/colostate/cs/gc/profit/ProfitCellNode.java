@@ -55,6 +55,16 @@ public class ProfitCellNode implements NodeValue {
         this.seqNo = seqNo;
     }
 
+    public Object getKey() {
+        return this.cell;
+    }
+
+    public void update(NodeValue value) {
+        ProfitCellNode newValue = (ProfitCellNode) value;
+        this.profitability = newValue.profitability;
+        this.seqNo = newValue.seqNo;
+    }
+
     private PriorityQueue<Double> lowQueue = new PriorityQueue<Double>(20, new Comparator<Double>() {
 
         public int compare(Double o1, Double o2) {

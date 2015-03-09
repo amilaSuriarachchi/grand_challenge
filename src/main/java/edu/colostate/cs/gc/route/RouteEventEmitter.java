@@ -4,7 +4,9 @@ import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.event.DropOffEvent;
 import edu.colostate.cs.gc.event.Route;
 import edu.colostate.cs.gc.exception.OutlierPointException;
+import edu.colostate.cs.gc.process.EventWriter;
 import edu.colostate.cs.gc.process.MessageBuffer;
+import edu.colostate.cs.gc.process.TopEventProcessor;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
 import edu.colostate.cs.worker.api.Adaptor;
@@ -125,14 +127,15 @@ public class RouteEventEmitter implements Adaptor {
 
 
     public static void main(String[] args) {
-        int numberOfBuffers = 2;
-        TopRouteProcessor topRouteProcessor = new TopRouteProcessor(numberOfBuffers);
+        int numberOfBuffers = 4;
+        EventWriter eventWriter = new TopRouteWriter("top_routes.txt");
+        TopEventProcessor topEventProcessor = new TopEventProcessor(numberOfBuffers, eventWriter);
         //initialize buffers
         MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
         for (int i = 0; i < messageBuffers.length; i++) {
-            messageBuffers[i] = new MessageBuffer(new RouteProcessor(topRouteProcessor, numberOfBuffers));
+            messageBuffers[i] = new MessageBuffer(new RouteProcessor(topEventProcessor, numberOfBuffers));
         }
         new RouteEventEmitter().loadData(args[0], messageBuffers);
-        topRouteProcessor.close();
+        topEventProcessor.close();
     }
 }

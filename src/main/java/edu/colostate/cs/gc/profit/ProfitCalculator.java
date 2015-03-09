@@ -1,19 +1,14 @@
 package edu.colostate.cs.gc.profit;
 
-import edu.colostate.cs.gc.event.Cell;
-import edu.colostate.cs.gc.event.TripEvent;
-import edu.colostate.cs.gc.event.PaymentEvent;
-import edu.colostate.cs.gc.event.TopProfitableEvent;
+import edu.colostate.cs.gc.event.*;
 import edu.colostate.cs.gc.list.NodeList;
 import edu.colostate.cs.gc.list.NodeValue;
 import edu.colostate.cs.gc.process.TripProcessor;
+import edu.colostate.cs.gc.route.RouteCount;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,17 +26,16 @@ public class ProfitCalculator extends TripProcessor {
     private long startTime;
     private boolean isStarted;
 
-
-    private int numOfEvents = 0;
-    private double avgDelay = 0;
-
-    private ProfitEventWriter profitEventWriter;
-
+    private Set<Cell> lastCellSet;
     private List<NodeValue> lastCellList;
 
-    public ProfitCalculator() {
-        this.profitEventWriter = new ProfitEventWriter();
+    private int numOfProcessors;
+
+    public ProfitCalculator(TripProcessor tripProcessor, int numOfProcessors) {
         this.lastCellList = new ArrayList<NodeValue>();
+        this.lastCellSet = new HashSet<Cell>();
+        this.processor = tripProcessor;
+        this.numOfProcessors = numOfProcessors;
     }
 
     public void processEvent(TripEvent event) {
@@ -154,21 +148,56 @@ public class ProfitCalculator extends TripProcessor {
         }
 
         List<NodeValue> currentList = this.nodeList.getTopValues();
+
         if (!Util.isSame(this.lastCellList, currentList) &&
                 (paymentEvent.getDropOffTimeMillis() - this.startTime > Constants.SMALL_WINDOW_SIZE)) {
-            long delay = System.currentTimeMillis() - paymentEvent.getStartTime();
-            this.avgDelay = (this.avgDelay * this.numOfEvents + delay) / (this.numOfEvents + 1);
-            this.numOfEvents++;
-            this.profitEventWriter.processEvent(new TopProfitableEvent(paymentEvent.getStartTime(),
-                    paymentEvent.getPickUpTime(), paymentEvent.getDropOffTimeMillis(), this.nodeList.getTopValues()));
+
+            Set<Cell> currentCellSet = getCellSet(currentList);
+            this.lastCellSet.removeAll(currentCellSet);
+
+            TopProfitsEvent topProfitsEvent = new TopProfitsEvent(
+                                                paymentEvent.getStartTime(),
+                                                paymentEvent.getPickUpTime(),
+                                                paymentEvent.getDropOffTimeMillis());
+
+            topProfitsEvent.setSeqNo(paymentEvent.getSeqNo());
+
+            int processorID;
+            if (paymentEvent.isPayEvent()){
+                processorID = paymentEvent.getPickUpCell().hashCode() % this.numOfProcessors;
+            } else {
+                processorID = paymentEvent.getDropOffCell().hashCode() % this.numOfProcessors;
+            }
+            topProfitsEvent.setProcessorID(processorID);
+            topProfitsEvent.setRemovedKeys(this.lastCellSet);
+
+            for (NodeValue nodeValue : currentList){
+               ProfitCellNode profitCellNode = (ProfitCellNode) nodeValue;
+                topProfitsEvent.addNodeValue(
+                        new TopProfitCellNode(profitCellNode.getProfitability(),
+                                              profitCellNode.getMidFare(),
+                                              profitCellNode.getNumOfEmptyTaxis(),
+                                              profitCellNode.getSeqNo(),
+                                              profitCellNode.getCell()));
+            }
+
+            this.processor.processEvent(topProfitsEvent);
+            this.lastCellSet = currentCellSet;
         }
         this.lastCellList = currentList;
 
     }
 
+    private Set<Cell> getCellSet(List<NodeValue> cellList) {
+        Set<Cell> cells = new HashSet<Cell>();
+        for (NodeValue nodeValue : cellList) {
+            cells.add(((ProfitCellNode) nodeValue).getCell());
+        }
+        return cells;
+    }
+
     public void close() {
-        System.out.println("Average delay ==> " + this.avgDelay);
-        this.profitEventWriter.close();
+
     }
 
 }

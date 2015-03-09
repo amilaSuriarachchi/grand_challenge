@@ -59,14 +59,6 @@ public class RouteProcessor extends TripProcessor {
             this.startTime = dropOffEvent.getDropOffTimeMillis();
         }
 
-//        List<NodeValue> tempPreList = nodeList.getTopValues();
-//
-//        List<NodeValue> preList = new ArrayList<NodeValue>();
-//        for (NodeValue nodeValue : tempPreList){
-//            RouteCount routeCount = (RouteCount) nodeValue;
-//            preList.add(new RouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getSeqNo()));
-//        }
-
         this.window.add(dropOffEvent);
         // whether the current top ten events get changed.
         if (!this.nodeList.containsKey(dropOffEvent.getRoute())) {
@@ -94,7 +86,8 @@ public class RouteProcessor extends TripProcessor {
 
         List<NodeValue> currentList = this.nodeList.getTopValues();
 
-        if (!Util.isSame(this.lastRouteList, currentList) && (dropOffEvent.getDropOffTimeMillis() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+        if (!Util.isSame(this.lastRouteList, currentList) &&
+                         (dropOffEvent.getDropOffTimeMillis() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
             Set<Route> currentRoutSet = getRouteSet(currentList);
             this.lastRouteSet.removeAll(currentRoutSet);
             generateRouteChangeEvent(dropOffEvent.getStartTime(),
@@ -126,12 +119,12 @@ public class RouteProcessor extends TripProcessor {
                                          int processID,
                                          int seqNo) {
         TopRoutesEvent topRoutesEvent = new TopRoutesEvent(startTime, pickUpTime, dropOffTime);
-        topRoutesEvent.setRemovedRoutes(removedRoutes);
+        topRoutesEvent.setRemovedKeys(removedRoutes);
         topRoutesEvent.setProcessorID(processID);
         topRoutesEvent.setSeqNo(seqNo);
         for (NodeValue nodeValue : newRoutes){
             RouteCount routeCount = (RouteCount) nodeValue;
-            topRoutesEvent.addRouteCount(
+            topRoutesEvent.addNodeValue(
                     new TopRouteCount(routeCount.getCount(), routeCount.getRoute(), routeCount.getSeqNo()));
         }
         this.processor.processEvent(topRoutesEvent);

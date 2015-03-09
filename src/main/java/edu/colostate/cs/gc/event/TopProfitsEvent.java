@@ -1,31 +1,28 @@
 package edu.colostate.cs.gc.event;
 
 import edu.colostate.cs.gc.list.NodeValue;
-import edu.colostate.cs.gc.route.RouteCount;
+import edu.colostate.cs.gc.profit.TopProfitCellNode;
 import edu.colostate.cs.gc.route.TopRouteCount;
 import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
  * User: amila
- * Date: 2/18/15
- * Time: 5:53 PM
+ * Date: 3/9/15
+ * Time: 2:33 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TopRoutesEvent extends TopEvent {
+public class TopProfitsEvent extends TopEvent {
 
-    public TopRoutesEvent() {
+    public TopProfitsEvent() {
     }
 
-    public TopRoutesEvent(long startTime, String pickUpTime, long dropOffTime) {
+    public TopProfitsEvent(long startTime, String pickUpTime, long dropOffTime) {
         super(startTime, pickUpTime, dropOffTime);
     }
 
@@ -45,13 +42,13 @@ public class TopRoutesEvent extends TopEvent {
 
             dataOutput.writeInt(this.removedKeys.size());
             for (Object key : this.removedKeys) {
-                Route route = (Route) key;
-                route.serialize(dataOutput);
+                Cell cell = (Cell) key;
+                cell.serialize(dataOutput);
             }
             dataOutput.writeInt(this.newValueList.size());
             for (NodeValue nodeValue : this.newValueList) {
-                TopRouteCount topRouteCount = (TopRouteCount) nodeValue;
-                topRouteCount.serialize(dataOutput);
+                TopProfitCellNode topProfitCellNode = (TopProfitCellNode) nodeValue;
+                topProfitCellNode.serialize(dataOutput);
             }
 
         } catch (IOException e) {
@@ -71,16 +68,16 @@ public class TopRoutesEvent extends TopEvent {
             int length = dataInput.readInt();
             this.removedKeys = new HashSet<Object>();
             for (int i = 0; i < length; i++) {
-                Route route = new Route();
-                route.parse(dataInput);
-                this.removedKeys.add(route);
+                Cell cell = new Cell();
+                cell.parse(dataInput);
+                this.removedKeys.add(cell);
             }
 
             length = dataInput.readInt();
             for (int i = 0; i < length; i++) {
-                TopRouteCount routeCount = new TopRouteCount();
-                routeCount.parse(dataInput);
-                this.newValueList.add(routeCount);
+                TopProfitCellNode topProfitCellNode = new TopProfitCellNode();
+                topProfitCellNode.parse(dataInput);
+                this.newValueList.add(topProfitCellNode);
             }
         } catch (IOException e) {
             throw new MessageProcessingException("Can not read the message ");
