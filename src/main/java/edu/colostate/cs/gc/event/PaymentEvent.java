@@ -5,6 +5,7 @@ import edu.colostate.cs.worker.comm.exception.MessageProcessingException;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,17 +39,46 @@ public class PaymentEvent extends TripEvent {
 
     @Override
     public Object getKey() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        if (isPayEvent){
+            return this.pickUpCell;
+        } else {
+            return this.dropOffCell;
+        }
     }
 
     @Override
     public void serialize(DataOutput dataOutput) throws MessageProcessingException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        try {
+            dataOutput.writeUTF(this.medallion);
+            dataOutput.writeDouble(this.fare);
+            dataOutput.writeBoolean(this.isPayEvent);
+            dataOutput.writeUTF(this.dropOffTime);
+            dataOutput.writeUTF(this.pickUpTime);
+            this.pickUpCell.serialize(dataOutput);
+            this.dropOffCell.serialize(dataOutput);
+            dataOutput.writeLong(this.startTime);
+
+        } catch (IOException e) {
+            throw new MessageProcessingException("Can not write data ");
+        }
     }
 
     @Override
     public void parse(DataInput dataInput) throws MessageProcessingException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        try {
+            this.medallion = dataInput.readUTF();
+            this.fare = dataInput.readDouble();
+            this.isPayEvent = dataInput.readBoolean();
+            this.dropOffTime = dataInput.readUTF();
+            this.pickUpTime = dataInput.readUTF();
+            this.pickUpCell = new Cell();
+            this.pickUpCell.parse(dataInput);
+            this.dropOffCell = new Cell();
+            this.dropOffCell.parse(dataInput);
+            this.startTime = dataInput.readLong();
+        } catch (IOException e) {
+            throw new MessageProcessingException("Can not read data");
+        }
     }
 
     public String getMedallion() {

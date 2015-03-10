@@ -3,12 +3,16 @@ package edu.colostate.cs.gc.profit;
 import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.event.PaymentEvent;
 import edu.colostate.cs.gc.process.MessageBuffer;
+import edu.colostate.cs.gc.route.StreamEmitter;
 import edu.colostate.cs.gc.util.Constants;
+import edu.colostate.cs.worker.api.Adaptor;
+import edu.colostate.cs.worker.api.Container;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,26 +21,34 @@ import java.io.IOException;
  * Time: 1:01 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ProfitEventEmitter {
+public class ProfitEventEmitter implements Adaptor {
 
+    private Container container;
+    private String fileName;
+    private int numberOfThreads;
 
     public ProfitEventEmitter() {
     }
 
-    private void loadData() {
+    public void start() {
 
-        String fileName = "data/sorted_data.csv";
+        MessageBuffer[] messageBuffers = new MessageBuffer[this.numberOfThreads];
+        StreamEmitter streamEmitter = new StreamEmitter(this.container);
+        for (int i = 0; i < this.numberOfThreads; i++) {
+            messageBuffers[i] = new MessageBuffer(streamEmitter);
+        }
+        this.loadData(this.fileName, messageBuffers);
+    }
+
+    public void initialise(Container container, Map<String, String> parameterMap) {
+        this.container = container;
+        this.fileName = parameterMap.get("fileName");
+        this.numberOfThreads = Integer.parseInt(parameterMap.get("threads"));
+    }
+
+    private void loadData(String fileName, MessageBuffer[] messageBuffers) {
+
         try {
-
-            int numberOfBuffers = 4;
-            //initialize buffers
-            MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
-            TopProfitProcessor topProfitProcessor = new TopProfitProcessor(numberOfBuffers);
-
-
-            for (int i = 0; i < messageBuffers.length; i++) {
-                messageBuffers[i] = new MessageBuffer(new ProfitCalculator(topProfitProcessor, numberOfBuffers));
-            }
 
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
             String line;
@@ -63,7 +75,7 @@ public class ProfitEventEmitter {
 
                     pickUpEvent.setFare(Double.parseDouble(values[11]) + Double.parseDouble(values[14]));
                     pickUpEvent.setPayEvent(true);
-                    int bufferNumber = pickUpEvent.getPickUpCell().hashCode() % numberOfBuffers;
+                    int bufferNumber = pickUpEvent.getPickUpCell().hashCode() % messageBuffers.length;
                     messageBuffers[bufferNumber].addMessage(pickUpEvent);
 
                     PaymentEvent dropOffEvent = new PaymentEvent();
@@ -79,7 +91,7 @@ public class ProfitEventEmitter {
                     dropOffEvent.setFare(pickUpEvent.getFare());
                     dropOffEvent.setPayEvent(false);
 
-                    bufferNumber = dropOffEvent.getDropOffCell().hashCode() % numberOfBuffers;
+                    bufferNumber = dropOffEvent.getDropOffCell().hashCode() % messageBuffers.length;
                     messageBuffers[bufferNumber].addMessage(dropOffEvent);
                 }
             }
@@ -96,7 +108,6 @@ public class ProfitEventEmitter {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
 
-            topProfitProcessor.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -120,6 +131,14 @@ public class ProfitEventEmitter {
     }
 
     public static void main(String[] args) {
-        new ProfitEventEmitter().loadData();
+        int numberOfBuffers = 2;
+        TopProfitProcessor topProfitProcessor = new TopProfitProcessor(numberOfBuffers);
+        //initialize buffers
+        MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
+        for (int i = 0; i < messageBuffers.length; i++) {
+            messageBuffers[i] = new MessageBuffer(new ProfitCalculator(topProfitProcessor, numberOfBuffers));
+        }
+        new ProfitEventEmitter().loadData(args[0], messageBuffers);
+        topProfitProcessor.close();
     }
 }
