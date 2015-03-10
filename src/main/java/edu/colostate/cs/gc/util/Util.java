@@ -2,6 +2,10 @@ package edu.colostate.cs.gc.util;
 
 import edu.colostate.cs.gc.list.NodeValue;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -21,7 +25,7 @@ public class Util {
             return false;
         } else {
             for (int i = 0; i < list1.size(); i++) {
-                if (!list1.get(i).equals(list2.get(i))){
+                if (!list1.get(i).equals(list2.get(i))) {
                     return false;
                 }
             }
@@ -31,10 +35,11 @@ public class Util {
 
     /**
      * this method gets the date strings in the format of yyyy-MM-dd HH:mm:ss
+     *
      * @param dateString
      * @return
      */
-    public static long getTime(String dateString){
+    public static long getTime(String dateString) {
 
         String[] parts = dateString.split(" ");
         String[] dateParts = parts[0].trim().split("-");
@@ -51,6 +56,32 @@ public class Util {
         calendar.set(Calendar.SECOND, Integer.parseInt(hourParts[2]));
 
         return calendar.getTime().getTime();
-
     }
+
+    public static void displayStatistics(String fileName) {
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
+            String line = null;
+            String delayString = null;
+            int totalLines = 0;
+            long totalDelay = 0;
+            while ((line = bufferedReader.readLine()) != null) {
+                try{
+                    delayString = line.substring(line.lastIndexOf(",") + 1);
+                    totalDelay = totalDelay + Long.parseLong(delayString);
+                    totalLines++;
+                } catch (Exception e){
+                     break;
+                }
+            }
+            System.out.println("Total lines " + totalLines);
+            System.out.println("Average delay " + totalDelay * 1.0 / totalLines);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+
 }

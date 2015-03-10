@@ -5,6 +5,7 @@ import edu.colostate.cs.gc.event.PaymentEvent;
 import edu.colostate.cs.gc.process.MessageBuffer;
 import edu.colostate.cs.gc.route.StreamEmitter;
 import edu.colostate.cs.gc.util.Constants;
+import edu.colostate.cs.gc.util.Util;
 import edu.colostate.cs.worker.api.Adaptor;
 import edu.colostate.cs.worker.api.Container;
 
@@ -13,6 +14,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,12 +36,17 @@ public class ProfitEventEmitter implements Adaptor {
 
     public void start() {
 
+        CyclicBarrier barrier = new CyclicBarrier(this.numberOfThreads + 1);
+        CountDownLatch latch = new CountDownLatch(this.numberOfThreads);
+
+
         MessageBuffer[] messageBuffers = new MessageBuffer[this.numberOfThreads];
         StreamEmitter streamEmitter = new StreamEmitter(this.container);
         for (int i = 0; i < this.numberOfThreads; i++) {
-            messageBuffers[i] = new MessageBuffer(streamEmitter);
+            messageBuffers[i] = new MessageBuffer(streamEmitter, barrier, latch);
         }
-        this.loadData(this.fileName, messageBuffers);
+        this.loadData(this.fileName, messageBuffers, barrier, latch);
+        Util.displayStatistics("top_profit_cells.txt");
     }
 
     public void initialise(Container container, Map<String, String> parameterMap) {
@@ -46,15 +55,24 @@ public class ProfitEventEmitter implements Adaptor {
         this.numberOfThreads = Integer.parseInt(parameterMap.get("threads"));
     }
 
-    private void loadData(String fileName, MessageBuffer[] messageBuffers) {
+    private void loadData(String fileName, MessageBuffer[] messageBuffers, CyclicBarrier barrier, CountDownLatch latch) {
 
         try {
 
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
             String line;
 
-            int seqNo = 0;
+            int seqNo = 1;
 
+            try {
+                barrier.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (BrokenBarrierException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+
+            System.out.println("Start processing messages ...");
             long currentTime = System.currentTimeMillis();
 
             while ((line = bufferedReader.readLine()) != null) {
@@ -100,7 +118,18 @@ public class ProfitEventEmitter implements Adaptor {
                 messageBuffers[i].setFinish();
             }
 
-            System.out.println("Total time (ms) " + (System.currentTimeMillis() - currentTime));
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+
+            long totalTime = System.currentTimeMillis() - currentTime;
+            System.out.println("Display statistics ...");
+            System.out.println("Total time (ms) " + totalTime);
+            System.out.println("Total time (Min) " + totalTime * 1.0 / 60000 );
+
+            bufferedReader.close();
 
             try {
                 Thread.sleep(10000);
@@ -132,13 +161,17 @@ public class ProfitEventEmitter implements Adaptor {
 
     public static void main(String[] args) {
         int numberOfBuffers = 2;
+
+        CyclicBarrier barrier = new CyclicBarrier(numberOfBuffers + 1);
+        CountDownLatch latch = new CountDownLatch(numberOfBuffers);
+
         TopProfitProcessor topProfitProcessor = new TopProfitProcessor(numberOfBuffers);
         //initialize buffers
         MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
         for (int i = 0; i < messageBuffers.length; i++) {
-            messageBuffers[i] = new MessageBuffer(new ProfitCalculator(topProfitProcessor, numberOfBuffers));
+            messageBuffers[i] = new MessageBuffer(new ProfitCalculator(topProfitProcessor, numberOfBuffers), barrier, latch);
         }
-        new ProfitEventEmitter().loadData(args[0], messageBuffers);
-        topProfitProcessor.close();
+        new ProfitEventEmitter().loadData(args[0], messageBuffers, barrier, latch);
+        Util.displayStatistics("top_profit_cells.txt");
     }
 }

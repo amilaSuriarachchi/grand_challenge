@@ -23,8 +23,6 @@ public class ProfitEventWriter extends EventWriter {
     @Override
     public void writeLine(long startTime, String pickUpTime, long dropOffTime, List<NodeValue> nodeValues) {
         long delay = System.currentTimeMillis() - startTime;
-        this.avgDelay = (this.avgDelay * this.numOfEvents + delay) / (this.numOfEvents + 1);
-        this.numOfEvents++;
         try {
             this.eventWriter.write(pickUpTime + ",");
             this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");

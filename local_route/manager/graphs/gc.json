@@ -21,6 +21,9 @@
                 "className": "edu.colostate.cs.gc.route.TopRouteProcessor",
                 "cluster" : "top",
                 "instances" : 1,
+                "parameters" : [
+                    { "name" : "processors", "value" : "2"}
+                ],
                 "receivers" :[
                     {
                         "name" : "route",

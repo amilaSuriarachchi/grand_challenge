@@ -20,9 +20,6 @@ public abstract class EventWriter {
     protected BufferedWriter eventWriter;
     protected SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    protected int numOfEvents = 0;
-    protected double avgDelay = 0;
-
     public EventWriter(String fileName) {
         try {
             this.eventWriter = new BufferedWriter(new FileWriter(fileName));
@@ -34,8 +31,7 @@ public abstract class EventWriter {
     public abstract void writeLine(long startTime, String pickUpTime, long dropOffTime, List<NodeValue> nodeValues);
 
     public void close() {
-        System.out.println("Number of events " + this.numOfEvents);
-        System.out.println("Average delay " + this.avgDelay);
+
         try {
             this.eventWriter.flush();
             this.eventWriter.close();

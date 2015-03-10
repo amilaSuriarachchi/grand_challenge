@@ -4,6 +4,9 @@ import edu.colostate.cs.gc.event.TripEvent;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,10 +24,15 @@ public class MessageWorker implements Runnable {
 
     private TripProcessor processor;
 
-    public MessageWorker(TripProcessor processor) {
+    private CyclicBarrier barrier;
+    private CountDownLatch latch;
+
+    public MessageWorker(TripProcessor processor, CyclicBarrier barrier, CountDownLatch latch) {
         this.messages = new LinkedList<TripEvent>();
         this.isFinished = false;
         this.processor = processor;
+        this.barrier = barrier;
+        this.latch = latch;
     }
 
     public synchronized void addEvents(TripEvent[] events) {
@@ -66,11 +74,21 @@ public class MessageWorker implements Runnable {
 
     public void run() {
         TripEvent event = null;
+
+        try {
+            this.barrier.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (BrokenBarrierException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
         // record will be thread executions is over.
         while ((event = getEvent()) != null) {
             this.processor.processEvent(event);
         }
 
-        this.processor.close();
+        this.latch.countDown();
+
     }
 }

@@ -18,6 +18,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,17 +36,28 @@ public class RouteEventEmitter implements Adaptor {
     private int numberOfThreads;
 
 
-    private void loadData(String fileName, MessageBuffer[] messageBuffers) {
+    private void loadData(String fileName,
+                          MessageBuffer[] messageBuffers,
+                          CyclicBarrier barrier,
+                          CountDownLatch latch) {
 
         try {
-            int errorLines = 0;
-            String line;
+
             BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
 
-            long currentTime = System.currentTimeMillis();
-            int eventCount = 0;
-
+            String line = null;
             int seqNo = 1;
+
+            try {
+                barrier.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (BrokenBarrierException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+
+            System.out.println("Start processing messages ...");
+            long currentTime = System.currentTimeMillis();
 
             while ((line = bufferedReader.readLine()) != null) {
                 String[] values = line.split(",");
@@ -68,10 +82,8 @@ public class RouteEventEmitter implements Adaptor {
                     }
 
                 } catch (Exception e) {
-                    errorLines++;
+                    // catch number format exceptions and do nothing.
                 }
-
-                eventCount++;
             }
 
             // finish all buffers
@@ -79,9 +91,18 @@ public class RouteEventEmitter implements Adaptor {
                 messageBuffers[i].setFinish();
             }
 
-            System.out.println("Total time (ms) " + (System.currentTimeMillis() - currentTime));
-            System.out.println("Total error lines " + errorLines);
-            System.out.println("Event count " + eventCount);
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+
+            long totalTime = System.currentTimeMillis() - currentTime;
+            System.out.println("Display statistics ...");
+            System.out.println("Total time (ms) " + totalTime);
+            System.out.println("Total time (Min) " + totalTime * 1.0 / 60000 );
+
+            bufferedReader.close();
 
             try {
                 Thread.sleep(10000);
@@ -98,12 +119,17 @@ public class RouteEventEmitter implements Adaptor {
     }
 
     public void start() {
+
+        CyclicBarrier barrier = new CyclicBarrier(this.numberOfThreads + 1);
+        CountDownLatch latch = new CountDownLatch(this.numberOfThreads);
+
         MessageBuffer[] messageBuffers = new MessageBuffer[this.numberOfThreads];
         StreamEmitter streamEmitter = new StreamEmitter(this.container);
         for (int i = 0; i < this.numberOfThreads; i++) {
-            messageBuffers[i] = new MessageBuffer(streamEmitter);
+            messageBuffers[i] = new MessageBuffer(streamEmitter, barrier, latch);
         }
-        this.loadData(this.fileName, messageBuffers);
+        this.loadData(this.fileName, messageBuffers, barrier, latch);
+        Util.displayStatistics("top_routes.txt");
     }
 
     public void initialise(Container container, Map<String, String> parameterMap) {
@@ -127,14 +153,19 @@ public class RouteEventEmitter implements Adaptor {
 
 
     public static void main(String[] args) {
-        int numberOfBuffers = 4;
+        int numberOfBuffers = 2;
+
+        CyclicBarrier barrier = new CyclicBarrier(numberOfBuffers + 1);
+        CountDownLatch latch = new CountDownLatch(numberOfBuffers);
+
         TopRouteProcessor topRouteProcessor = new TopRouteProcessor(numberOfBuffers);
         //initialize buffers
         MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
         for (int i = 0; i < messageBuffers.length; i++) {
-            messageBuffers[i] = new MessageBuffer(new RouteProcessor(topRouteProcessor, numberOfBuffers));
+            messageBuffers[i] = new MessageBuffer(new RouteProcessor(topRouteProcessor, numberOfBuffers), barrier, latch);
         }
-        new RouteEventEmitter().loadData(args[0], messageBuffers);
+        new RouteEventEmitter().loadData(args[0], messageBuffers, barrier, latch);
         topRouteProcessor.close();
+        Util.displayStatistics("top_routes.txt");
     }
 }

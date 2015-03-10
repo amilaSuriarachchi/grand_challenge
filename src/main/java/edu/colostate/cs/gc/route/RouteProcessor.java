@@ -28,10 +28,6 @@ public class RouteProcessor extends TripProcessor {
     private boolean isStarted = false;
     private long startTime;
 
-    private double windowAvg = 0;
-    private long numOfMessages = 0;
-
-
     private Set<Route> lastRouteSet;
     private List<NodeValue> lastRouteList;
 
@@ -104,10 +100,6 @@ public class RouteProcessor extends TripProcessor {
         // this can either be inside or outside if statement.
         this.lastRouteList = currentList;
 
-        this.windowAvg = (this.windowAvg * this.numOfMessages + this.window.size()) / (this.numOfMessages + 1);
-        this.numOfMessages++;
-
-
     }
 
 
@@ -139,6 +131,6 @@ public class RouteProcessor extends TripProcessor {
     }
 
     public void close() {
-        System.out.println("Average window size ==> " + this.windowAvg);
+
     }
 }

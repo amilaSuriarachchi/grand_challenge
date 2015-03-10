@@ -2,6 +2,9 @@ package edu.colostate.cs.gc.process;
 
 import edu.colostate.cs.gc.event.TripEvent;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+
 /**
  * Created with IntelliJ IDEA.
  * User: amila
@@ -17,9 +20,9 @@ public class MessageBuffer {
     private TripEvent[] buffer;
     private int bufferCount;
 
-    public MessageBuffer(TripProcessor processor) {
+    public MessageBuffer(TripProcessor processor, CyclicBarrier barrier, CountDownLatch latch) {
 
-        this.messageWorker = new MessageWorker(processor);
+        this.messageWorker = new MessageWorker(processor, barrier, latch);
         Thread thread = new Thread(this.messageWorker);
         thread.start();
 
