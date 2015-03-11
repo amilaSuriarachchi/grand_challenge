@@ -76,41 +76,47 @@ public class ProfitEventEmitter implements Adaptor {
             long currentTime = System.currentTimeMillis();
 
             while ((line = bufferedReader.readLine()) != null) {
-                String[] values = line.split(",");
 
-                PaymentEvent pickUpEvent = new PaymentEvent();
-                pickUpEvent.setSeqNo(seqNo);
-                seqNo++;
+                try {
+                    String[] values = line.split(",");
 
-                pickUpEvent.setStartTime(System.currentTimeMillis());
-                pickUpEvent.setMedallion(values[0].trim());
-                pickUpEvent.setPickUpTime(values[2]);
-                pickUpEvent.setDropOffTime(values[3]);
-                pickUpEvent.setPickUpCell(getCell(Double.parseDouble(values[6]), Double.parseDouble(values[7])));
-                pickUpEvent.setDropOffCell(getCell(Double.parseDouble(values[8]), Double.parseDouble(values[9])));
-
-                if ((pickUpEvent.getPickUpCell() != null) && (pickUpEvent.getDropOffCell() != null)) {
-
-                    pickUpEvent.setFare(Double.parseDouble(values[11]) + Double.parseDouble(values[14]));
-                    pickUpEvent.setPayEvent(true);
-                    int bufferNumber = pickUpEvent.getPickUpCell().hashCode() % messageBuffers.length;
-                    messageBuffers[bufferNumber].addMessage(pickUpEvent);
-
-                    PaymentEvent dropOffEvent = new PaymentEvent();
-                    dropOffEvent.setSeqNo(seqNo);
+                    PaymentEvent pickUpEvent = new PaymentEvent();
+                    pickUpEvent.setSeqNo(seqNo);
                     seqNo++;
 
-                    dropOffEvent.setStartTime(System.currentTimeMillis());
-                    dropOffEvent.setMedallion(pickUpEvent.getMedallion());
-                    dropOffEvent.setPickUpTime(pickUpEvent.getPickUpTime());
-                    dropOffEvent.setDropOffTime(pickUpEvent.getDropOffTime());
-                    dropOffEvent.setPickUpCell(pickUpEvent.getPickUpCell());
-                    dropOffEvent.setDropOffCell(pickUpEvent.getDropOffCell());
-                    dropOffEvent.setFare(pickUpEvent.getFare());
-                    dropOffEvent.setPayEvent(false);
+                    pickUpEvent.setStartTime(System.currentTimeMillis());
+                    pickUpEvent.setMedallion(values[0].trim());
+                    pickUpEvent.setPickUpTime(values[2]);
+                    pickUpEvent.setDropOffTime(values[3]);
+                    pickUpEvent.setPickUpCell(getCell(Double.parseDouble(values[6]), Double.parseDouble(values[7])));
+                    pickUpEvent.setDropOffCell(getCell(Double.parseDouble(values[8]), Double.parseDouble(values[9])));
 
-                    bufferNumber = dropOffEvent.getDropOffCell().hashCode() % messageBuffers.length;
-                    messageBuffers[bufferNumber].addMessage(dropOffEvent);
+                    if ((pickUpEvent.getPickUpCell() != null) && (pickUpEvent.getDropOffCell() != null)) {
+
+                        pickUpEvent.setFare(Double.parseDouble(values[11]) + Double.parseDouble(values[14]));
+                        pickUpEvent.setPayEvent(true);
+                        int bufferNumber = pickUpEvent.getPickUpCell().hashCode() % messageBuffers.length;
+                        messageBuffers[bufferNumber].addMessage(pickUpEvent);
+
+                        PaymentEvent dropOffEvent = new PaymentEvent();
+                        dropOffEvent.setSeqNo(seqNo);
+                        seqNo++;
+
+                        dropOffEvent.setStartTime(System.currentTimeMillis());
+                        dropOffEvent.setMedallion(pickUpEvent.getMedallion());
+                        dropOffEvent.setPickUpTime(pickUpEvent.getPickUpTime());
+                        dropOffEvent.setDropOffTime(pickUpEvent.getDropOffTime());
+                        dropOffEvent.setPickUpCell(pickUpEvent.getPickUpCell());
+                        dropOffEvent.setDropOffCell(pickUpEvent.getDropOffCell());
+                        dropOffEvent.setFare(pickUpEvent.getFare());
+                        dropOffEvent.setPayEvent(false);
+
+                        bufferNumber = dropOffEvent.getDropOffCell().hashCode() % messageBuffers.length;
+                        messageBuffers[bufferNumber].addMessage(dropOffEvent);
+                    }
+
+                } catch (Exception e) {
+                    // catch number format exceptions and do nothing.
                 }
             }
 
@@ -127,7 +133,7 @@ public class ProfitEventEmitter implements Adaptor {
             long totalTime = System.currentTimeMillis() - currentTime;
             System.out.println("Display statistics ...");
             System.out.println("Total time (ms) " + totalTime);
-            System.out.println("Total time (Min) " + totalTime * 1.0 / 60000 );
+            System.out.println("Total time (Min) " + totalTime * 1.0 / 60000);
 
             bufferedReader.close();
 

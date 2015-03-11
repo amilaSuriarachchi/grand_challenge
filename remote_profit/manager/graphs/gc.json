@@ -1,0 +1,48 @@
+    {
+        "processors": [
+            {
+                "name": "cal",
+                "className": "edu.colostate.cs.gc.profit.ProfitCalculator",
+                "cluster" : "cal",
+                "instances" : 4,
+                "eventType" : "edu.colostate.cs.gc.event.TopProfitsEvent",
+                "parameters" : [
+                    { "name" : "processors", "value" : "2"}
+                ],
+                "receivers" :[
+                    {
+                        "name" : "producer",
+                        "type" : "hash"
+                    }
+                ]
+            },
+            {
+                "name": "top",
+                "className": "edu.colostate.cs.gc.profit.TopProfitProcessor",
+                "cluster" : "top",
+                "instances" : 1,
+                "parameters" : [
+                    { "name" : "processors", "value" : "2"}
+                ],
+                "receivers" :[
+                    {
+                        "name" : "cal",
+                        "type" : "random"
+                    }
+                ]
+            }
+        ],
+        "adapters": [
+            {
+                "name": "producer",
+                "className": "edu.colostate.cs.gc.profit.ProfitEventEmitter",
+                "cluster" : "adapter",
+                "instances" : 1,
+                "eventType" : "edu.colostate.cs.gc.event.PaymentEvent",
+                "parameters" : [
+                    { "name" : "fileName", "value" : "/home/amila/csu-msc/research/projects/grand_challenge/data/sorted_data.csv"},
+                    { "name" : "threads", "value" : "2"}
+                ]
+            }
+        ]
+    }

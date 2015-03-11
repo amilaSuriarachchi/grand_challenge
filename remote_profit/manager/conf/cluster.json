@@ -1,0 +1,39 @@
+    {
+        "clusters" : [
+            {
+                "name" : "cal",
+                "nodes" : [
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3001",
+                        "msgPort" : "4001"
+                    },
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3002",
+                        "msgPort" : "4002"
+                    }
+                ]
+            },
+            {
+                "name" : "top",
+                "nodes" : [
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3005",
+                        "msgPort" : "4005"
+                    }
+                ]
+            },
+            {
+                "name" : "adapter",
+                "nodes" : [
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3000",
+                        "msgPort" : "4000"
+                    }
+                ]
+            }
+        ]
+    }

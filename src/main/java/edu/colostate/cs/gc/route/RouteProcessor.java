@@ -9,6 +9,7 @@ import edu.colostate.cs.gc.list.NodeValue;
 import edu.colostate.cs.gc.process.TripProcessor;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
+import edu.colostate.cs.worker.api.Container;
 
 import java.util.*;
 
@@ -35,13 +36,20 @@ public class RouteProcessor extends TripProcessor {
 
     public RouteProcessor() {
         this.lastRouteSet = new HashSet<Route>();
+        this.lastRouteList = new ArrayList<NodeValue>();
+
     }
 
     public RouteProcessor(TripProcessor processor, int numOfProcessors) {
+        this();
         this.processor = processor;
         this.numOfProcessors = numOfProcessors;
-        this.lastRouteSet = new HashSet<Route>();
-        this.lastRouteList = new ArrayList<NodeValue>();
+    }
+
+    @Override
+    public void initialise(Container container, Map<String, String> parameters) {
+        super.initialise(container, parameters);
+        this.numOfProcessors = Integer.parseInt(parameters.get("processors"));
     }
 
     public void processEvent(TripEvent event) {

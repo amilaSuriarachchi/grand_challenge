@@ -7,6 +7,7 @@ import edu.colostate.cs.gc.process.TripProcessor;
 import edu.colostate.cs.gc.route.RouteCount;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
+import edu.colostate.cs.worker.api.Container;
 
 import java.util.*;
 
@@ -31,11 +32,21 @@ public class ProfitCalculator extends TripProcessor {
 
     private int numOfProcessors;
 
-    public ProfitCalculator(TripProcessor tripProcessor, int numOfProcessors) {
+    public ProfitCalculator() {
         this.lastCellList = new ArrayList<NodeValue>();
         this.lastCellSet = new HashSet<Cell>();
+    }
+
+    public ProfitCalculator(TripProcessor tripProcessor, int numOfProcessors) {
+        this();
         this.processor = tripProcessor;
         this.numOfProcessors = numOfProcessors;
+    }
+
+    @Override
+    public void initialise(Container container, Map<String, String> parameters) {
+        super.initialise(container, parameters);
+        this.numOfProcessors = Integer.parseInt(parameters.get("processors"));
     }
 
     public void processEvent(TripEvent event) {

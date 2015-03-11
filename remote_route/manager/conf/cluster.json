@@ -1,0 +1,49 @@
+    {
+        "clusters" : [
+            {
+                "name" : "route",
+                "nodes" : [
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3001",
+                        "msgPort" : "4001"
+                    },
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3002",
+                        "msgPort" : "4002"
+                    },
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3003",
+                        "msgPort" : "4003"
+                    },
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3004",
+                        "msgPort" : "4004"
+                    }
+                ]
+            },
+            {
+                "name" : "top",
+                "nodes" : [
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3005",
+                        "msgPort" : "4005"
+                    }
+                ]
+            },
+            {
+                "name" : "adapter",
+                "nodes" : [
+                    {
+                        "ip" : "localhost",
+                        "adminPort" : "3000",
+                        "msgPort" : "4000"
+                    }
+                ]
+            }
+        ]
+    }
