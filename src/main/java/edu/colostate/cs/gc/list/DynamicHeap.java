@@ -65,6 +65,7 @@ public class DynamicHeap {
         this.heapNodes[0].setArrayPosition(0);
         this.heapSize--;
         moveDown(this.heapNodes[0]);
+        this.keyMap.remove(maxElement.getKey());
         return maxElement.getNodeValue();
     }
 

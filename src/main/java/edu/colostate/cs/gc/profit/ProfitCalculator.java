@@ -192,6 +192,7 @@ public class ProfitCalculator extends TripProcessor {
                                               profitCellNode.getCell()));
             }
 
+
             this.processor.processEvent(topProfitsEvent);
             this.lastCellSet = currentCellSet;
         }

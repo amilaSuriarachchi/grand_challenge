@@ -3,10 +3,7 @@ package edu.colostate.cs.gc.route;
 import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.event.DropOffEvent;
 import edu.colostate.cs.gc.event.Route;
-import edu.colostate.cs.gc.exception.OutlierPointException;
-import edu.colostate.cs.gc.process.EventWriter;
 import edu.colostate.cs.gc.process.MessageBuffer;
-import edu.colostate.cs.gc.process.TopEventProcessor;
 import edu.colostate.cs.gc.util.Constants;
 import edu.colostate.cs.gc.util.Util;
 import edu.colostate.cs.worker.api.Adaptor;
@@ -16,7 +13,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
@@ -153,7 +149,7 @@ public class RouteEventEmitter implements Adaptor {
 
 
     public static void main(String[] args) {
-        int numberOfBuffers = 2;
+        int numberOfBuffers = 3;
 
         CyclicBarrier barrier = new CyclicBarrier(numberOfBuffers + 1);
         CountDownLatch latch = new CountDownLatch(numberOfBuffers);
