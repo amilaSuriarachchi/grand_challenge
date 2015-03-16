@@ -52,3 +52,73 @@ Table \ref{orderedlist_api} shows the operations of the \textit{OrderedList} dat
         \caption{\textit{OrderedList} data structure implementation}
         \label{orderedlist_impl}
 \end{figure}
+
+\subsection{DynamicHeap data structure}
+
+\begin{table}
+\centering
+\caption{Operations of \textit{DynamicHeap} Data Structure}
+\begin{tabular}{|l|l|} \hline
+Operation Signature & Time Complexity \\ \hline \hline
+add(key : Object, value : NodeValue) & O(log(n)) \\ \hline
+remove(key : Object) : NodeValue & O(log(n)) \\ \hline
+containsKey(key : Object) : boolean & O(1) \\ \hline
+get(key : Object) : NodeValue & O(1) \\ \hline
+moveUp(key : Object) & O(log(n)) \\ \hline
+moveDown(key : Object) & O(log(n)) \\ \hline
+getMaxkey() : Object & O(1) \\ \hline
+extractMax() : NodeValue & O(log(n)) \\ \hline
+\end{tabular}
+\label{dynamicheap_api}
+\end{table}
+
+Table \ref{dynamicheap_api} shows the operations of the \textit{DynamicHeap} data structure. \texttt{MoveUp} and \texttt{moveDown} operations are used to move an element up in the heap if the value increased, or move down in the heap if the value decreased. Figure \ref{dynamicheap_impl} shows the implementation details. Conventional heaps only support \texttt{add} and \texttt{extractMax} operations since heap operations requires to know the element position in heap. When adding an element we add it to last position and move that up and extracting maximum element start at array position 0. In order to support \texttt{moveUp}, \texttt{moveDown} and \texttt{remove} operations, we keep the array index with the object itself. This allows us to retrieve array index in O(1) time and move the element O(log(n)) time.
+
+
+\begin{figure}[!t]
+        \centering
+        \includegraphics[width=3.0in]{DinamicHeap.png}
+        \caption{\textit{DynamicHeap} data structure implementation}
+        \label{dynamicheap_impl}
+\end{figure}
+
+\subsection{Frequent Route Query}
+
+Frequent route query requires to find the top frequent routes within last 30 minutes. Algorithm \ref{frequent_route_algorithm} shows the algorithm to process this query using the \textit{NodeList} data structure and a queue to keep the events for the time window.  Since queue operations are supported in O(1) time, query evaluation happens in O(log(n)) time. Algorithm \ref{frequent_route_algorithm} shows the basic algorithm to process an event. This algorithm assumes there is a global NodeList object and route counts stored in an Object called RouteCount. 
+
+\begin{algorithm}
+\caption{Algorithm to generate top 10 frequent route change events}
+\label{frequent_route_algorithm}
+\begin{algorithmic} 
+\STATE beforeTopTen $\leftarrow$ nodeList.getTopValues() 
+\STATE window.add(event) 
+\IF{ nodeList.containsKey(event.route) }
+	\STATE routCount $\leftarrow$ nodeList.get(event.route) 
+	\STATE routCount.count++ 
+	\STATE nodeList.decrementPosition(event.route) 
+\ELSE
+	\STATE nodeList.add(event.route, new RouteCount(1)) 
+\ENDIF
+
+\WHILE{ there exists expired events }
+	\STATE  expEvent $\leftarrow$ window.poll() 
+	\STATE  routCount $\leftarrow$ nodeList.get(expEvent.route)
+	\STATE  routCount.count-- 
+	\IF{ routCount.count is 0 }
+		\STATE nodelist.remove(expEvent.route)
+	\ELSE
+		\STATE nodeList.incrementPosition(expEvent.route) 
+	\ENDIF
+\ENDWHILE
+
+\STATE nowTopTen $\leftarrow$ nodeList.getTopValues() 
+
+\IF{ preTopTen not equals nowTopTen }
+	\STATE create new event with top ten route details 
+\ENDIF
+
+\end{algorithmic}
+\end{algorithm}
+
+Processing an event can cause add, remove or update values of the existing time window objects. Therefore query processing mainly involves with performing above operations to the underlying \textit{NodeList} data structure and compare before and after top ten routes. As shown in Algorithm \ref{frequent_route_algorithm}, when an event arrives, first it put the event to time window to keep track for last 30 minutes. Then it adds new route value or update the existing value and move its position. Similarly, for expired events either it removes the values or reduces the count for existing values. Finally, two lists are compared to decide whether to generate an event or not. Here we have given a rough out line of the algorithm. Real implementation considers other factors such as sequence number to order events.
+
