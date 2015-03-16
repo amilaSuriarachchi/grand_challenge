@@ -122,3 +122,17 @@ Frequent route query requires to find the top frequent routes within last 30 min
 
 Processing an event can cause add, remove or update values of the existing time window objects. Therefore query processing mainly involves with performing above operations to the underlying \textit{NodeList} data structure and compare before and after top ten routes. As shown in Algorithm \ref{frequent_route_algorithm}, when an event arrives, first it put the event to time window to keep track for last 30 minutes. Then it adds new route value or update the existing value and move its position. Similarly, for expired events either it removes the values or reduces the count for existing values. Finally, two lists are compared to decide whether to generate an event or not. Here we have given a rough out line of the algorithm. Real implementation considers other factors such as sequence number to order events.
 
+\subsection{Profitable Cells Query}
+
+We have implemented profitable cells query in a similar manner to the frequent route query using  time windows. Complexity of the query raised following issues and we have solved them as given bellow.
+\begin{enumerate}
+	\item The profitability is calculated using the median profit and the number of empty taxis. In order to calculate median with O(log(n)) time complexity, we use two heaps (java.util.PriorityQueue) . One is used to keep the values lesser than the median value (max heap) and other is to keep higher values (min heap). However the delete operation of java.util.PriorityQueue takes O(n) time, since it traverse along the array to find the index of the object. We tried with our DynamicHeap implementation to fix this. But that did not improved the performance. Firstly, these heap sizes does not grow over the value of 60 and there are same values repeating in the list increasing the probability of find a value without traversing the whole list. Secondly, our implementation create more objects compared to just keeping double values though the time complexity is O(log(n)). 
+	\item In order to keep tract of empty taxis, we need to process both pickup cell and drop off cell details for each message. One way of doing this is to send all events for same process instance and process both details with one event. However this avoid the possibility of partitioning data across different processes. We generate two events one for pickup data and one for drop off data to make the process parallel. 
+	\item In order to handle expiration of drop off events, we keep track of the taxi ids currently available in a particular cell. If a pickup event occurs before drop off event expiration, then we remove that taxi id from that cell and reduce the empty taxi count. In such a case drop off event expiration does not cause a reduction of taxi count.
+\end{enumerate}
+
+
+
+
+
+
