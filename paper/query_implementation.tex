@@ -1,0 +1,18 @@
+\section{Query Implementation}
+In this section, we elaborate how we have implemented the query logic to achieve O(log(n)) time complexity. The 2015 Grand Challenge problem has two queries. First is to evaluate top ten most frequent routes within last 30 minutes and second is to evaluate top ten profitable areas within last 15 minutes. We can use a composite object to keep route details for each route and fare details to each cell to compare values among routes and cells. However, each time window can have thousands of route and cell details. Therefore an efficient data structure is required to add, remove, update and retrieve top ten values from a set of objects for a given time window efficiently. Further since each event is received with route and cell details, above mentioned operations should perform using route and cell details as the key. In order to support all these functions with O(log(n)) time complexity we developed a data structure called NodeList. Following parts of this section describes how we have achieve this time complexity with \textit{NodeList} data structure and how we have implemented the queries using that data structure.
+
+\subsection{NodeList data structure}
+
+\begin{table}
+\centering
+\caption{Operations of \textit{NodeList} Data Structure}
+\begin{tabular}{|l|l|} \hline
+Operation Signature & Time Complexity \\ \hline \hline
+add(key : Object, value : NodeValue) & O(log(n)) \\ \hline 
+get(key : Object) : NodeValue & O(1) \\ \hline
+remove(key : Object) : NodeValue & O(log(n)) \\ \hline
+decrementPosition(key : Object) & O(log(n)) \\ \hline
+incrementPosition(key : Object) & O(log(n)) \\ \hline
+getTopValues() : List<NodeValue> & O(1) \\ \hline
+\end{tabular}
+\end{table}
