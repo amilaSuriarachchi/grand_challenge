@@ -101,7 +101,7 @@ Shrideep Pallickara\\
 \begin{abstract}
 Processing complex queries on unbounded event streams in real time, is a challenge for many organizational data processing systems. These systems are expected to process data with minimal latency to generate real time events, and high through put to minimize the required hardware. In this regard DEBS Grand Challenge 2015 focus on evaluating two queries (frequent routes and  profitable cells) in real time with minimal latency and high throughput. These queries involve processing windows of thousands of records. Firstly, such processing demands efficient data structures and algorithms to minimize the processing over head. Secondly, system should partition data to process them in parallel to efficient use of hardware.
 
-In this paper, we present a set of data structures which can be used to evaluate two queries with O(log(n)) time complexity and a data partition technique to process events in parallel. Then we evaluate our solution within signal node as well as in distributed setups. We could process frequent routes query with 173 million data set within 5 minutes with less than 4 millisecond latency and profitable cells query with same data set within 11 minutes with less than 5 millisecond latency.
+In this paper, we present a set of data structures which can be used to evaluate two queries with O(log(n)) time complexity and a data partition technique to process events in parallel. Then we evaluate our solution within signal node as well as in distributed setups. We could process frequent routes query with 173 million dataset within 5 minutes with less than 4 millisecond latency and profitable cells query with same data set within 11 minutes with less than 5 millisecond latency.
 \end{abstract}
 
 % A category with the (minimum) three required fields
@@ -114,6 +114,7 @@ introduction
 
 \input{query_implementation}
 \input{query_evaluation}
+\input{experiments}
 
 %
 % The following two commands are all you need in the
