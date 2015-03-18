@@ -3,7 +3,10 @@ package edu.colostate.cs.gc.profit;
 import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.list.NodeValue;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.PriorityQueue;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.

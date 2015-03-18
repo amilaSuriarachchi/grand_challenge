@@ -112,21 +112,21 @@ public class TopEventProcessor extends TripProcessor {
         }
 
         // add new values
-        for (NodeValue routeCount : topEvent.getNewValueList()) {
+        for (NodeValue nodeValue : topEvent.getNewValueList()) {
 
-            if (!this.nodeList.containsKey(routeCount.getKey())) {
+            if (!this.nodeList.containsKey(nodeValue.getKey())) {
                 // need to create a new object to avoid conflicts with earlier process objects.
-                this.nodeList.add(routeCount.getKey(), routeCount);
+                this.nodeList.add(nodeValue.getKey(), nodeValue);
             } else {
-                NodeValue existingValue = this.nodeList.get(routeCount.getKey());
-                if (routeCount.compare(existingValue) == -1) {
-                    existingValue.update(routeCount);
+                NodeValue existingValue = this.nodeList.get(nodeValue.getKey());
+                if (nodeValue.compare(existingValue) == -1) {
+                    existingValue.update(nodeValue);
                     //if the new value is less it has to move further down.
-                    this.nodeList.incrementPosition(routeCount.getKey());
+                    this.nodeList.incrementPosition(nodeValue.getKey());
                 } else {
                     // if it is not less either can same or increased.
-                    existingValue.update(routeCount);
-                    this.nodeList.decrementPosition(routeCount.getKey());
+                    existingValue.update(nodeValue);
+                    this.nodeList.decrementPosition(nodeValue.getKey());
                 }
             }
         }

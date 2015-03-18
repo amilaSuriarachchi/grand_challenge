@@ -12,12 +12,29 @@ import java.util.Map;
  */
 public class DynamicHeap {
 
-    private HeapNode[] heapNodes = new HeapNode[20000];
-    private Map<Object, HeapNode> keyMap = new HashMap<Object, HeapNode>();
+    private HeapNode[] heapNodes;
+    private Map<Object, HeapNode> keyMap;
+    private int capacity = 0;
 
     private int heapSize = 0;
 
+    public DynamicHeap() {
+        this.heapNodes = new HeapNode[20000];
+        this.keyMap = new HashMap<Object, HeapNode>(500);
+        this.capacity = 20000;
+
+    }
+
+    public DynamicHeap(int capacity){
+        this.heapNodes = new HeapNode[capacity];
+        this.keyMap = new HashMap<Object, HeapNode>(capacity);
+        this.capacity = capacity;
+    }
+
     public void add(Object key, NodeValue value) {
+        if (this.heapSize == this.capacity){
+           increaseCapacity();
+        }
         HeapNode heapNode = new HeapNode(value, key);
         this.keyMap.put(key, heapNode);
         this.heapNodes[this.heapSize] = heapNode;
@@ -25,6 +42,19 @@ public class DynamicHeap {
         this.heapSize++;
         moveUp(heapNode);
 
+    }
+
+    private void increaseCapacity(){
+        this.capacity = this.capacity * 2;
+        HeapNode[] newHeap = new HeapNode[this.capacity];
+        for (int i = 0; i < this.heapSize;i++){
+            newHeap[i] = this.heapNodes[i];
+        }
+        this.heapNodes = newHeap;
+    }
+
+    public boolean isEmpty(){
+        return this.heapSize == 0;
     }
 
     public NodeValue remove(Object key) {
@@ -45,6 +75,7 @@ public class DynamicHeap {
             this.heapSize--;
         }
 
+        this.heapNodes[this.heapSize] = null;
         return heapNode.getNodeValue();
     }
 
@@ -60,13 +91,29 @@ public class DynamicHeap {
         if (this.heapSize == 0) {
             return null;
         }
+
         HeapNode maxElement = this.heapNodes[0];
-        this.heapNodes[0] = this.heapNodes[this.heapSize - 1];
-        this.heapNodes[0].setArrayPosition(0);
-        this.heapSize--;
-        moveDown(this.heapNodes[0]);
+        if (this.heapSize == 1){
+            // i.e we have only one element
+            this.heapSize--;
+        } else {
+            this.heapNodes[0] = this.heapNodes[this.heapSize - 1];
+            this.heapNodes[0].setArrayPosition(0);
+            this.heapSize--;
+            moveDown(this.heapNodes[0]);
+        }
+
+        this.heapNodes[this.heapSize] = null;
         this.keyMap.remove(maxElement.getKey());
         return maxElement.getNodeValue();
+    }
+
+    public NodeValue getMaxValue(){
+        if (this.heapSize == 0){
+            return null;
+        }
+
+        return this.heapNodes[0].getNodeValue();
     }
 
     public void moveUp(Object key) {

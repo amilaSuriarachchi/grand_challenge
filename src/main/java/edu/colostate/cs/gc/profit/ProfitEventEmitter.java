@@ -75,6 +75,7 @@ public class ProfitEventEmitter implements Adaptor {
             System.out.println("Start processing messages ...");
             long currentTime = System.currentTimeMillis();
 
+
             while ((line = bufferedReader.readLine()) != null) {
 
                 try {
@@ -93,7 +94,8 @@ public class ProfitEventEmitter implements Adaptor {
 
                     if ((pickUpEvent.getPickUpCell() != null) && (pickUpEvent.getDropOffCell() != null)) {
 
-                        pickUpEvent.setFare(Double.parseDouble(values[11]) + Double.parseDouble(values[14]));
+                        double fare = Double.parseDouble(values[11]) + Double.parseDouble(values[14]);
+                        pickUpEvent.setFare(Math.round(fare * 100)/ 100.0);
                         pickUpEvent.setPayEvent(true);
 
                         int bufferNumber;
@@ -118,6 +120,8 @@ public class ProfitEventEmitter implements Adaptor {
                             bufferNumber = dropOffEvent.getDropOffCell().hashCode() % messageBuffers.length;
                             messageBuffers[bufferNumber].addMessage(dropOffEvent);
                         }
+
+
                     }
 
                 } catch (Exception e) {
