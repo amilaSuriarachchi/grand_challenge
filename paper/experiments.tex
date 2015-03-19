@@ -21,7 +21,7 @@ We deployed this process graph to a distributed stream processing system we have
         \label{time_route}
 \end{figure}
  
-Figure \ref{time_route} shows the execution times. For both setups execution time is higher for single instance due to lack of parallelism of the system. For distributed setup time get reduced with addition of new nodes and comes to a constant level. For single JVM set up highest throughput is achieved with two route processors. After that point time get slightly increases due to context switching.
+Figure \ref{time_route} shows the execution times. For both setups execution time is higher for single instance due to lack of parallelism of the system. For distributed setup time get reduced with addition of new nodes and comes to a constant level. This means our solution scales up to 4 node level and maintains a constant throughput. This is due to two reasons. Firstly, \textit{RouteProcessor} is not a computing intensive process. Secondly, there is only one \textit{RouteEventEmitter} and the speed at which it can read and send messages becomes the bottleneck. For single JVM set up highest throughput is achieved with two route processors. After that point time get slightly increases due to context switching.
 
 \begin{figure}[!t]
         \centering
@@ -53,7 +53,7 @@ Similar to earlier experiment,  we deployed this process graph to our system and
         \label{time_profit}
 \end{figure}
  
-Figure \ref{time_profit} shows the execution times for both setups. In both setups, there is a higher latency at one instance due to lack of parallelism. Then for distributed set up execution times get reduced with addition of new resources and for single JVM setup it remains a constant. 
+Figure \ref{time_profit} shows the execution times for both setups. In both setups, there is a higher latency at one instance due to lack of parallelism. Then for distributed set up execution times get reduced with addition of new resources and for single JVM setup it remains a constant. This shows our solution scales up in a distributed setup. We can increase the system throughput by adding new nodes until \textit{ProfitEventEmitter} becomes the bottleneck.
 
 
 \begin{figure}[!t]
@@ -63,6 +63,7 @@ Figure \ref{time_profit} shows the execution times for both setups. In both setu
         \label{latency_profit}
 \end{figure}
 
-Figure \ref{latency_profit} shows the latencies. For single JVM, latencies slightly increased with the addition of new instances as expected. But for distributed setups there is a higher latencies compared to others. This latency is due to longer queues at the \textit{TopProfitProcessor}.
+Figure \ref{latency_profit} shows the latencies. For single JVM, latencies slightly increased with the addition of new instances as expected. But for distributed setups there is a higher latencies compared to others. This latency is due to longer queues at the \textit{TopProfitProcessor}. In our message ordering process, we can only send a message to \textit{TopProfitProcessor} only if all queues are not empty. This allows some processes with less top ten profitable events to delay other process messages. This problem can  possibly fixed by adding a limit to the message queue size. On the other hand in a real time system, this event ordering many not required since event processing happens at real time. 
+
 
 
