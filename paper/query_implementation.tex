@@ -20,7 +20,7 @@ getTopValues() : List<NodeValue> & O(1) \\ \hline
 
 Table \ref{nodelist_api} shows the operations of this data structure. The \textit{NodeValue} is an interface to plug any user defined type as a value. For an example, the route query can use a \textit{RouteCount} object to keep route count while profitable cells query can use \textit{CellProfict} object to keep fare details. This interface contains a method called compare to define the order of the values. The \textit{NodeList} data structure provides the notion of a sorted values starting from position 0 (highest value) to its users. The \texttt{decrementPostion} operation moves the corresponding value towards position 0 until the correct position according to sorted order. Therefore this method should be called after increasing a value of an existing object. Similarly \texttt{incrementPosition} operation can be used to move a value to correct position after decreasing the value of an existing object. \texttt{GetTopValues} operation returns the top ten values of the list. Query algorithm sections further elaborate usage of these methods.
 
-One way of implementing this data structure is to use a heap. Heap supports adding and extracting maximum value operations in O(log(n)) time. However since this application requires top 10 values, we need to retrieve maximum value ten times and insert them back. On the other hand if we use a doubly linked list to keep values, it will take O(n) time for  \texttt{decrementPostion} and \texttt{incrementPosition} operations. Therefore we can use a doubly linked list to keep first 10 values (this makes time complexity for all operations with this data structure O(1)) and a heap to keep other values to avoid above problems.  A Map which points to values can be used to retrieve values using a key.
+One way of implementing this data structure is to use a heap. Heap supports adding and extracting maximum value operations in O(log(n)) time. However since this application requires top 10 values, we need to retrieve maximum value ten times and insert them back. On the other hand if we use a doubly linked list to keep values, it will take O(n) time for  \texttt{decrementPostion} and \texttt{incrementPosition} operations. Therefore we can use a doubly linked list to keep first 10 values (this makes time complexity for all operations with this data structure O(1)) and a heap to keep other values to avoid above problems.  A \textit{Map} which points to values can be used to retrieve values using a key.
 
 \textit{NodeList} data structure uses two data structures called \textit{OrderedList} to keep first 10 values and \textit{DynamicHeap} to keep other values. In this way it has to change only the last value of \textit{OrderedList} and maximum value of \textit{DynamicHeap} as required. Following sections describes how these data structures have been implemented with their operations.
 
@@ -43,7 +43,7 @@ getLastKey() : Object & O(1) \\ \hline
 \label{orderedlist_api}
 \end{table}
 
-Table \ref{orderedlist_api} shows the operations of the \textit{OrderedList} data structure. First six methods has the same meanings as the \textit{NodeList} data structure and last two can be used to get the size of the list and the value of the last object. We internally keep a counter and a pointer to tail to support these operations in O(1) time. Figure \ref{orderedlist_impl} shows the implementation details. The Map structure (an HashMap) is used to retrieve object pointers with O(1) expected time. Each node of the doubly linked list points to previous and next nodes while storing the \textit{NodeValue}.
+Table \ref{orderedlist_api} shows the operations of the \textit{OrderedList} data structure. First six methods has the same meanings as the \textit{NodeList} data structure and last two can be used to get the size of the list and the value of the last object. We internally keep a counter and a pointer to tail to support these operations in O(1) time. Figure \ref{orderedlist_impl} shows the implementation details. The \textit{Map} structure (an \textit{java.util.HashMap}) is used to retrieve object pointers with O(1) expected time. Each node of the doubly linked list points to previous and next nodes while storing the \textit{NodeValue}.
 
 
 \begin{figure}[!t]
@@ -72,7 +72,7 @@ extractMax() : NodeValue & O(log(n)) \\ \hline
 \label{dynamicheap_api}
 \end{table}
 
-Table \ref{dynamicheap_api} shows the operations of the \textit{DynamicHeap} data structure. \texttt{MoveUp} and \texttt{moveDown} operations are used to move an element up in the heap if the value increased, or move down in the heap if the value decreased. Figure \ref{dynamicheap_impl} shows the implementation details. Conventional heaps only support \texttt{add} and \texttt{extractMax} operations since heap operations requires to know the element position in heap. When adding an element we add it to last position and move that up and extracting maximum element start at array position 0. In order to support \texttt{moveUp}, \texttt{moveDown} and \texttt{remove} operations, we keep the array index with the object itself. This allows us to retrieve array index in O(1) time and move the element O(log(n)) time.
+Table \ref{dynamicheap_api} shows the operations of the \textit{DynamicHeap} data structure. \texttt{MoveUp} and \texttt{moveDown} operations are used to move an element up in the heap if the value increased, or move down in the heap if the value decreased. Figure \ref{dynamicheap_impl} shows the implementation details. Conventional heaps only support \texttt{add} and \texttt{extractMax} operations since heap operations requires to know the element position in heap. When adding an element, we add it to last position and move that up and extracting maximum element start at array position 0. In order to support \texttt{moveUp}, \texttt{moveDown} and \texttt{remove} operations, we keep the array index with the object itself. This allows us to retrieve array index in O(1) time and move the element O(log(n)) time.
 
 
 \begin{figure}[!t]
@@ -89,7 +89,8 @@ Frequent route query requires to find the top frequent routes within last 30 min
 \begin{algorithm}
 \caption{Algorithm to generate top 10 frequent route change events}
 \label{frequent_route_algorithm}
-\begin{algorithmic} 
+\begin{algorithmic}
+\small 
 \STATE beforeTopTen $\leftarrow$ nodeList.getTopValues() 
 \STATE window.add(event) 
 \IF{ nodeList.containsKey(event.route) }
@@ -131,6 +132,86 @@ We have implemented profitable cells query in a similar manner to the frequent r
 	\item In order to handle expiration of dropoff events, we keep track of the taxi ids currently available in a particular cell. If a pickup event occurs before dropoff event expiration, then we remove that taxi id from that cell and reduce the empty taxi count. In such a case dropoff event expiration does not cause a reduction of taxi count.
 \end{enumerate}
 
+Algorithm \ref{pickup_algorithm} shows the logic to process pickup data. When a taxi gets a pickup, the taxi fare is added to that cell. We use \textit{ProfitCellNode} to keep the fare and empty taxi details to calculate the profitability. Then if its' taxi dropoff event has not been occurred (i.e this taxi has come to this location less than 30 minutes ago) it removes the taxi from that location. When the event get expired, it removes the fare from the \textit{ProfitCellNode}. 
+
+\begin{algorithm}
+\caption{Algorithm to process pickup data}
+\label{pickup_algorithm}
+\begin{algorithmic}
+\small
+\STATE beforeTopTen $ \leftarrow $ nodeList.getTopValues()
+\STATE paymentWindow.add(event)
+\IF {nodeList.containsKey(event.pickUpCell)}
+	\STATE profitCellNode $ \leftarrow $ nodeList.get(event.pickUpCell)
+	\STATE profitCellNode.addFare(event.fare)
+	\IF {profitCellNode.containsTaxi(event.medalliion)}
+		\STATE profitCellNode.emptyTaxi--
+		\STATE profitCellNode.removeTaxi(event.medallion)
+	\ENDIF
+	\IF {profitablity has increased}
+		\STATE nodeList.decrementPosition(event.pickUpCell)
+	\ELSE
+		\STATE nodeList.incrementPosition(event.pickUpCell)	
+	\ENDIF
+\ELSE
+	\STATE nodeList.add(event.pickUpCell, new ProfitCellNode(event.fare))
+\ENDIF
+\WHILE {there exits expired events}
+	\STATE expiredEvent $ \leftarrow $ paymentWindow.poll()
+	\STATE profitCellNode $ \leftarrow $ nodeList.get(expiredEvent.pickUpCell)
+	\STATE profitCellNode.removeFare(expiredEvent.fare)
+	
+	\IF {profitCellNode is empty}
+		\STATE nodeList.remove(expiredEvent.pickUpCell)
+	\ELSIF {profitablity increased}
+		\STATE nodeList.decrementPosition(event.pickUpCell)
+	\ELSE
+		\STATE nodeList.incrementPosition(event.pickUpCell)
+	\ENDIF
+\ENDWHILE
+\STATE nowTopTen $ \leftarrow $ nodeList.getTopValues()
+\IF {beforeTopTen not equals to nowTopTen}
+	\STATE emit a top ten change event
+\ENDIF		 
+
+\end{algorithmic}
+\end{algorithm}
+
+Algorithm \ref{dropoff_algorithm} shows the logic to process dropoff data. When a taxi trip ended in a location, number of empty taxis of that location has to be increased. If the taxi does not get a pickup within 30 mintes, then that taxi has to be removed from that location.
+
+\begin{algorithm}
+\caption{Algorithm to process dropoff data}
+\label{dropoff_algorithm}
+\begin{algorithmic}
+\small
+\STATE beforeTopTen $ \leftarrow $ nodeList.getTopValues()
+\STATE dropWindow.add(event)
+\IF {nodeList.containsKey(event.dropOffCell)}
+	\STATE profitCellNode $ \leftarrow $ nodeList.get(event.dropOffCell)
+	\STATE profitCellNode.addTaxi(event.medallion)
+	\STATE profitCellNode.emptyTaxi++
+	\STATE nodeList.incrementPosition(event.dropOffCell)	
+
+\ELSE
+	\STATE nodeList.add(event.dropOffCell, new ProfitCellNode(event.medallion))
+\ENDIF
+\WHILE {there are expired events}
+	\STATE expiredEvent $ \leftarrow $ dropWindow.poll()
+	\STATE profitCellNode $ \leftarrow $ nodeList.get(expiredEvent.dropOffCell)
+	\IF {profitCellNode.containsTaxi(expiredEvent.medallion)}
+		\STATE profitCellNode.emptyTaxi--
+		\STATE profitCellNode.removeTaxi(expiredEvent.medallion)
+		
+		\IF {profitCellNode is empty}
+			\STATE nodeList.remove(event.dropoffCell)
+		\ELSE 
+			\STATE nodeList.decrementPosition(event.dropOffCell) 
+		\ENDIF
+	\ENDIF
+\ENDWHILE
+
+\end{algorithmic}
+\end{algorithm}
 
 
 

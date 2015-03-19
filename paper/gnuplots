@@ -13,7 +13,7 @@ reset
 set notitle
 set xlabel "Number of route processors"
 set ylabel "Latency (ms)"
-set yrange [0:75]
+set yrange [0:100]
 set xtics 1
 set term png
 set output "latency_route.png"
@@ -33,7 +33,7 @@ reset
 set notitle
 set xlabel "Number of profit calculators"
 set ylabel "Latency (ms)"
-set yrange [0:160]
+set yrange [0:220]
 set xtics 1
 set term png
 set output "latency_profit.png"
