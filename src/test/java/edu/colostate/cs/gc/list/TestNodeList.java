@@ -15,7 +15,7 @@ public class TestNodeList extends TestCase {
 
     public void testRemoveNodes(){
 
-        NodeList nodeList = new NodeList();
+        NodeList nodeList = new NodeList(100);
 
         nodeList.add("route1", new CountNode(5, "route1"));
         assertTrue(nodeList.checkConsistency());
@@ -79,7 +79,7 @@ public class TestNodeList extends TestCase {
 
     public void testDecrementPosition(){
 
-        NodeList nodeList = new NodeList();
+        NodeList nodeList = new NodeList(100);
 
         nodeList.add("route1", new CountNode(5, "route1"));
         assertTrue(nodeList.checkConsistency());
@@ -145,7 +145,7 @@ public class TestNodeList extends TestCase {
     }
 
     public void testIncrementPosition(){
-        NodeList nodeList = new NodeList();
+        NodeList nodeList = new NodeList(100);
 
         nodeList.add("route1", new CountNode(5, "route1"));
         assertTrue(nodeList.checkConsistency());
@@ -229,7 +229,7 @@ public class TestNodeList extends TestCase {
     }
 
     public void testIncrementWithoutHeap(){
-        NodeList nodeList = new NodeList();
+        NodeList nodeList = new NodeList(100);
 
         nodeList.add("route1", new CountNode(5, "route1"));
         assertTrue(nodeList.checkConsistency());

@@ -49,6 +49,7 @@ public class PaymentEvent extends TripEvent {
     @Override
     public void serialize(DataOutput dataOutput) throws MessageProcessingException {
         try {
+            dataOutput.writeInt(this.seqNo);
             dataOutput.writeUTF(this.medallion);
             dataOutput.writeDouble(this.fare);
             dataOutput.writeBoolean(this.isPayEvent);
@@ -66,6 +67,7 @@ public class PaymentEvent extends TripEvent {
     @Override
     public void parse(DataInput dataInput) throws MessageProcessingException {
         try {
+            this.seqNo = dataInput.readInt();
             this.medallion = dataInput.readUTF();
             this.fare = dataInput.readDouble();
             this.isPayEvent = dataInput.readBoolean();

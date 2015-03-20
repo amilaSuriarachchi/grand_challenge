@@ -24,7 +24,7 @@ public class RouteProcessor extends TripProcessor {
 
     private Queue<DropOffEvent> window = new LinkedList<DropOffEvent>();
 
-    NodeList nodeList = new NodeList();
+    NodeList nodeList = new NodeList(8192);
 
     private boolean isStarted = false;
     private long startTime;
@@ -140,6 +140,5 @@ public class RouteProcessor extends TripProcessor {
     }
 
     public void close() {
-
     }
 }

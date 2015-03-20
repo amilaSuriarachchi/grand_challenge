@@ -22,7 +22,7 @@ public class ProfitCalculator extends TripProcessor {
 
     private Queue<PaymentEvent> paymentWindow = new LinkedList<PaymentEvent>();
     private Queue<PaymentEvent> dropWindow = new LinkedList<PaymentEvent>();
-    private NodeList nodeList = new NodeList();
+    private NodeList nodeList = new NodeList(2048);
 
     private long startTime;
     private boolean isStarted;
@@ -192,7 +192,6 @@ public class ProfitCalculator extends TripProcessor {
                                               profitCellNode.getCell()));
             }
 
-
             this.processor.processEvent(topProfitsEvent);
             this.lastCellSet = currentCellSet;
         }
@@ -209,7 +208,6 @@ public class ProfitCalculator extends TripProcessor {
     }
 
     public void close() {
-
     }
 
 }

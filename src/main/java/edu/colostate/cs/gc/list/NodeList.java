@@ -13,9 +13,8 @@ public class NodeList {
     private OrderedList list;
     private DynamicHeap heap;
 
-
-    public NodeList() {
-        this.heap = new DynamicHeap();
+    public NodeList(int capacity) {
+        this.heap = new DynamicHeap(capacity);
         this.list = new OrderedList();
     }
 
@@ -53,6 +52,7 @@ public class NodeList {
     }
 
     public void remove(Object key) {
+
         if (this.heap.containsKey(key)) {
             this.heap.remove(key);
         } else {

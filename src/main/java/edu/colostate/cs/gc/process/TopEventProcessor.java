@@ -27,10 +27,8 @@ public class TopEventProcessor extends TripProcessor {
 
     private List<NodeValue> lastRoutesList;
 
-    public static final int MAX_QUEUE_SIZE = 100;
-
     public TopEventProcessor(EventWriter eventWriter) {
-        this.nodeList = new NodeList();
+        this.nodeList = new NodeList(64);
         this.lastRoutesList = new ArrayList<NodeValue>();
         this.eventWriter = eventWriter;
 
@@ -58,23 +56,8 @@ public class TopEventProcessor extends TripProcessor {
     }
 
     public synchronized void processEvent(TripEvent event) {
+
         TopEvent topEvent = (TopEvent) event;
-        Queue<TopEvent> queue = this.queues.get(topEvent.getProcessorID());
-        if (queue.size() > MAX_QUEUE_SIZE){
-            // if it exceeds max size then we need to move the existing messages to application
-            while (queue.size() > MAX_QUEUE_SIZE){
-                // we know this queue should have at messages
-                int minIndex = topEvent.getProcessorID();
-                int minSeq = queue.peek().getSeqNo();
-                for (int i = 0; i < this.numbOfProcessors; i++) {
-                    if (!this.queues.get(i).isEmpty() && this.queues.get(i).peek().getSeqNo() < minSeq) {
-                        minIndex = i;
-                        minSeq = this.queues.get(i).peek().getSeqNo();
-                    }
-                }
-                processOrderedMessage(this.queues.get(minIndex).poll());
-            }
-        }
         this.queues.get(topEvent.getProcessorID()).add(topEvent);
 
         int minIndex = 0;

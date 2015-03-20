@@ -43,6 +43,7 @@ public class RouteEventEmitter implements Adaptor {
 
             String line = null;
             int seqNo = 1;
+            int numberOfEvents = 0;
 
             try {
                 barrier.await();
@@ -75,6 +76,7 @@ public class RouteEventEmitter implements Adaptor {
                         dropOffEvent.setRoute(route);
                         int bufferNumber = route.hashCode() % messageBuffers.length;
                         messageBuffers[bufferNumber].addMessage(dropOffEvent);
+                        numberOfEvents++;
                     }
 
                 } catch (Exception e) {
@@ -97,6 +99,7 @@ public class RouteEventEmitter implements Adaptor {
             System.out.println("Display statistics ...");
             System.out.println("Total time (ms) " + totalTime);
             System.out.println("Total time (Min) " + totalTime * 1.0 / 60000 );
+            System.out.println("Throughput (Msg/s) " + numberOfEvents * 1000.0 / totalTime);
 
             bufferedReader.close();
 
@@ -149,7 +152,7 @@ public class RouteEventEmitter implements Adaptor {
 
 
     public static void main(String[] args) {
-        int numberOfBuffers = 3;
+        int numberOfBuffers = Integer.parseInt(args[1]);
 
         CyclicBarrier barrier = new CyclicBarrier(numberOfBuffers + 1);
         CountDownLatch latch = new CountDownLatch(numberOfBuffers);
