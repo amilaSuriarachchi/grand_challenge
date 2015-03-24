@@ -1,5 +1,5 @@
 \section{Experiments}
-We conduced several experiments to measure the soundness of our solution. Since the parallel message processing gives the better performance, we present details of those experiments with distributed setup as well a singel JVM setup. All these experiments were performed on a LAN with a network bandwidth of 1Gbps and all machines were Intel(R) Xeon(R) 2.4GHz, 4 core duo machines with 16 GB of memory. 
+We conduced several experiments to measure the soundness of our solution. Since the parallel message processing gives the better performance, we present details of those experiments with distributed setup as well a single JVM setup. All these experiments were performed on a LAN with a network bandwidth of 1Gbps and all machines were Intel(R) Xeon(R) 2.4GHz, 4 core duo machines with 16 GB of memory. 
 
 \subsection{Frequent routes query}
 
@@ -12,7 +12,7 @@ We conduced several experiments to measure the soundness of our solution. Since 
 
 Figure \ref{routegraph} shows the process graph used to process frequent route queries. \textit{RouteEventEmitter} reads the data file and emits events with a sequence number. \textit{RouteEmitter} contains a set of threads (equals to the number of \textit{RouteProcessors}) to emit events more efficiently. When processing each line first it reads the data line and creates a Route object using longitude and latitude coordinates of pickup and dropoff locations. Then it distributes the events among the \textit{RouteProcessors} using the hash value of the Route object. \textit{TopRouteProcessor} aggregates the results and saves them to a file.
 
-We deployed this process graph to a distributed stream processing system we have developed, and  measured the execution time and the average message latency varying the number of route processors with the data set given (173 million records). In local set up, we use a new thread to execute a new instance and in distributed setup we add a new node to execute the new instance.
+We deployed this process graph to a distributed stream processing system we have developed, and  measured the execution time and the average message latency varying the number of route processors with the data set given (173 million records). In the local set up, we use a new thread to execute a new instance and in the distributed setup we add a new node to execute the new instance.
 
 \begin{figure}[!t]
         \centering
@@ -31,7 +31,7 @@ Figure \ref{time_route} shows the execution times. For both setups execution tim
 \end{figure}
 
 
-Figure \ref{latency_route} shows the latencies. For single JVM setup latency get reduced at 2 and slightly get increase due to context switching as in the execution times. For distributed set up initial latency is high due to communication and message serialization parsing overheads. With higher number of processors latency get reduced.
+Figure \ref{latency_route} shows the latencies. For single JVM setup latency get reduced at 2 and slightly increases due to context switching as in the execution times. For distributed set up initial latency is high due to communication and message serialization parsing overheads. With higher number of processors latency gets reduced.
 
 \subsection{Profitable cells query}
 
@@ -42,7 +42,7 @@ Figure \ref{latency_route} shows the latencies. For single JVM setup latency get
         \label{profictgraph}
 \end{figure}
 
-Figure \ref{profictgraph} shows the process graph for profitable cells query. \textit{ProfitEventEmitter} reads the data file and calculates the pickup cell and dropoff cell details using longitude and latitude coordinates. Then it creates two events one for dropoff part and other to pickup part, with different sequence numbers and distributes the events among \textit{ProfictCalculators} using the hash value of the cell. In this way cells are partitioned into different \textit{ProfitCalculator} instances and each instance gets all the events relevant to its' cell set. We use a set of threads (equals to the number of Profict Calculators) to emit data as in the previous query. Finally \textit{TopProfictProcessor} aggregates events and writes to a file. 
+Figure \ref{profictgraph} shows the process graph for profitable cells query. \textit{ProfitEventEmitter} reads the data file and calculates the pickup cell and dropoff cell details using longitude and latitude coordinates. Then it creates two events one for dropoff part and other to pickup part, with different sequence numbers and distributes the events among \textit{ProfitCalculators} using the hash value of the cell. In this way cells are partitioned into different \textit{ProfitCalculator} instances and each instance gets all the events relevant to its' cell set. We use a set of threads (equals to the number of Profict Calculators) to emit data as in the previous query. Finally \textit{TopProfitProcessor} aggregates events and writes to a file. 
 Similar to earlier experiment,  we deployed this process graph to our system and measured the execution time and the average message latency with the data set given for both single JVM setup and distributed setup.
 
 
