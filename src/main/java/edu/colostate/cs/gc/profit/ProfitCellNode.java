@@ -2,6 +2,9 @@ package edu.colostate.cs.gc.profit;
 
 import edu.colostate.cs.gc.event.Cell;
 import edu.colostate.cs.gc.list.NodeValue;
+import edu.colostate.cs.gc.profit.median.DynamicFieldMF;
+import edu.colostate.cs.gc.profit.median.MedianFinder;
+import edu.colostate.cs.gc.profit.median.PriorityQueueMF;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -30,6 +33,9 @@ public class ProfitCellNode implements NodeValue {
 
     private int seqNo;
 
+    private MedianFinder medianFinder = new PriorityQueueMF();
+//    private MedianFinder medianFinder = new DynamicFieldMF();
+
     /**
      * this constructor is being created from an drop off event.
      */
@@ -52,6 +58,7 @@ public class ProfitCellNode implements NodeValue {
     public ProfitCellNode(double fare, Cell cell, int seqNo) {
         this.midFare = fare;
         this.numOfFares = 1;
+        this.medianFinder.add(fare);
         this.numOfEmptyTaxis = 0;
         this.profitability = UNDEFINED_PROFITABILITY;
         this.cell = cell;
@@ -67,19 +74,6 @@ public class ProfitCellNode implements NodeValue {
         this.profitability = newValue.profitability;
         this.seqNo = newValue.seqNo;
     }
-
-    private PriorityQueue<Double> lowQueue = new PriorityQueue<Double>(20, new Comparator<Double>() {
-
-        public int compare(Double o1, Double o2) {
-            return o2.compareTo(o1);
-        }
-    });
-    private PriorityQueue<Double> highQueue = new PriorityQueue<Double>(20, new Comparator<Double>() {
-
-        public int compare(Double o1, Double o2) {
-            return o1.compareTo(o2);
-        }
-    });
 
     public void reduceEmptyTaxi() {
         if (this.numOfEmptyTaxis > 0) {
@@ -99,28 +93,8 @@ public class ProfitCellNode implements NodeValue {
         // this means this taxi has leaved from this location. i.e we need to reduce the empty taxis.
         this.numOfFares++;
 
-        if (this.numOfFares % 2 == 0) {
-            if (fare <= this.midFare) {
-                this.lowQueue.add(fare);
-                double highOfLow = this.lowQueue.peek();
-                this.highQueue.add(this.midFare);
-                this.midFare = (this.midFare + highOfLow) / 2;
-            } else {
-                this.highQueue.add(fare);
-                double lowOfHigh = this.highQueue.peek();
-                this.lowQueue.add(this.midFare);
-                this.midFare = (this.midFare + lowOfHigh) / 2;
-            }
-        } else {
-            // now existing median is a fake median which is equals to mid point of two medians
-            if (fare <= this.midFare) {
-                this.lowQueue.add(fare);
-                this.midFare = this.lowQueue.poll();
-            } else {
-                this.highQueue.add(fare);
-                this.midFare = this.highQueue.poll();
-            }
-        }
+        this.medianFinder.add(fare);
+        this.midFare = this.medianFinder.getMedian();
         calculateProfitability();
     }
 
@@ -128,31 +102,8 @@ public class ProfitCellNode implements NodeValue {
 
         this.numOfFares--;
 
-        if (this.numOfFares == 0) {
-            this.midFare = 0;
-        } else {
-            if (this.numOfFares % 2 == 0) {
-                if (fare == this.midFare) {
-                    this.midFare = (this.lowQueue.peek() + this.highQueue.peek()) / 2;
-                } else if (fare > this.midFare) {
-                    this.highQueue.remove(fare);
-                    this.highQueue.add(this.midFare);
-                    this.midFare = (this.midFare + this.lowQueue.peek()) / 2;
-                } else {
-                    this.lowQueue.remove(fare);
-                    this.lowQueue.add(this.midFare);
-                    this.midFare = (this.midFare + this.highQueue.peek()) / 2;
-                }
-            } else {
-                if (fare > this.midFare) {
-                    this.highQueue.remove(fare);
-                    this.midFare = this.lowQueue.poll();
-                } else {
-                    this.lowQueue.remove(fare);
-                    this.midFare = this.highQueue.poll();
-                }
-            }
-        }
+        this.medianFinder.remove(fare);
+        this.midFare = this.medianFinder.getMedian();
         calculateProfitability();
     }
 

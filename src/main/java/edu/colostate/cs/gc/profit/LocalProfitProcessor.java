@@ -33,9 +33,10 @@ public class LocalProfitProcessor extends TripProcessor {
     public void initialise(Container container, Map<String, String> parameters) {
         super.initialise(container, parameters);
         this.numOfProcessors = Integer.parseInt(parameters.get("processors"));
+        int windowSize = Integer.parseInt(parameters.get("windowSize"));
         this.processors = new ProfitCalculator[this.numOfProcessors];
         for (int i = 0; i < this.numOfProcessors; i++) {
-            this.processors[i] = new ProfitCalculator(this.processor, this.numOfProcessors);
+            this.processors[i] = new ProfitCalculator(this.processor, this.numOfProcessors, windowSize);
         }
     }
 }

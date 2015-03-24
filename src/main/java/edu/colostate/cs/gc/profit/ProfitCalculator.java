@@ -31,16 +31,18 @@ public class ProfitCalculator extends TripProcessor {
     private List<NodeValue> lastCellList;
 
     private int numOfProcessors;
+    private int windowSize;
 
     public ProfitCalculator() {
         this.lastCellList = new ArrayList<NodeValue>();
         this.lastCellSet = new HashSet<Cell>();
     }
 
-    public ProfitCalculator(TripProcessor tripProcessor, int numOfProcessors) {
+    public ProfitCalculator(TripProcessor tripProcessor, int numOfProcessors, int windowSize) {
         this();
         this.processor = tripProcessor;
         this.numOfProcessors = numOfProcessors;
+        this.windowSize = windowSize * Constants.SMALL_WINDOW_SIZE;
     }
 
     @Override
@@ -93,7 +95,7 @@ public class ProfitCalculator extends TripProcessor {
             }
 
             while ((this.paymentWindow.size() > 0) &&
-                    (this.paymentWindow.peek().isExpired(paymentEvent.getDropOffTimeMillis(), Constants.SMALL_WINDOW_SIZE))) {
+                    (this.paymentWindow.peek().isExpired(paymentEvent.getDropOffTimeMillis(), this.windowSize))) {
                 PaymentEvent expiredEvent = this.paymentWindow.poll();
                 ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(expiredEvent.getPickUpCell());
                 double preProfitability = profitCellNode.getProfitability();
@@ -133,7 +135,7 @@ public class ProfitCalculator extends TripProcessor {
             }
 
             while ((this.dropWindow.size() > 0)
-                    && (this.dropWindow.peek().isExpired(paymentEvent.getDropOffTimeMillis(), Constants.LARGE_WINDOW_SIZE))) {
+                    && (this.dropWindow.peek().isExpired(paymentEvent.getDropOffTimeMillis(), this.windowSize * 2))) {
                 PaymentEvent expiredEvent = this.dropWindow.poll();
 
                 if (this.nodeList.containsKey(expiredEvent.getDropOffCell())) {
@@ -196,7 +198,6 @@ public class ProfitCalculator extends TripProcessor {
             this.lastCellSet = currentCellSet;
         }
         this.lastCellList = currentList;
-
     }
 
     private Set<Cell> getCellSet(List<NodeValue> cellList) {

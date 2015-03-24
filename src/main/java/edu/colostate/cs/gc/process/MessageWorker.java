@@ -89,5 +89,7 @@ public class MessageWorker implements Runnable {
         }
 
         this.latch.countDown();
+
+        this.processor.close();
     }
 }

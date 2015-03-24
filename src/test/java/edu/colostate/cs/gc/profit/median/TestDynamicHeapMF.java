@@ -9,11 +9,11 @@ import junit.framework.TestCase;
  * Time: 11:09 AM
  * To change this template use File | Settings | File Templates.
  */
-public class TestMedianFinder extends TestCase {
+public class TestDynamicHeapMF extends TestCase {
 
     public void testAddUnique(){
 
-        MedianFinder medianFinder = new MedianFinder();
+        DynamicFieldMF medianFinder = new DynamicFieldMF();
         medianFinder.add(20.0);
         assertEquals(medianFinder.getMedian(), 20.0);
 
@@ -32,7 +32,7 @@ public class TestMedianFinder extends TestCase {
     }
 
     public void testAddDuplicate(){
-        MedianFinder medianFinder = new MedianFinder();
+        DynamicFieldMF medianFinder = new DynamicFieldMF();
         medianFinder.add(25.0);
         assertEquals(medianFinder.getMedian(), 25.0);
         medianFinder.add(25.0);
@@ -83,7 +83,7 @@ public class TestMedianFinder extends TestCase {
     }
 
     public void testRemoveUnique(){
-        MedianFinder medianFinder = new MedianFinder();
+        DynamicFieldMF medianFinder = new DynamicFieldMF();
         medianFinder.add(20.0);
         medianFinder.add(25.0);
         medianFinder.add(17.0);
@@ -111,7 +111,7 @@ public class TestMedianFinder extends TestCase {
     }
 
     public void testRemoveDuplicate(){
-        MedianFinder medianFinder = new MedianFinder();
+        DynamicFieldMF medianFinder = new DynamicFieldMF();
         medianFinder.add(25.0);
         medianFinder.add(25.0);
 

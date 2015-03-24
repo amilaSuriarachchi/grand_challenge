@@ -179,6 +179,7 @@ public class ProfitEventEmitter implements Adaptor {
 
     public static void main(String[] args) {
         int numberOfBuffers = Integer.parseInt(args[1]);
+        int windowSize = Integer.parseInt(args[2]);
 
         CyclicBarrier barrier = new CyclicBarrier(numberOfBuffers + 1);
         CountDownLatch latch = new CountDownLatch(numberOfBuffers);
@@ -187,7 +188,8 @@ public class ProfitEventEmitter implements Adaptor {
         //initialize buffers
         MessageBuffer[] messageBuffers = new MessageBuffer[numberOfBuffers];
         for (int i = 0; i < messageBuffers.length; i++) {
-            messageBuffers[i] = new MessageBuffer(new ProfitCalculator(topProfitProcessor, numberOfBuffers), barrier, latch);
+            messageBuffers[i] = new MessageBuffer(
+                                new ProfitCalculator(topProfitProcessor, numberOfBuffers, windowSize), barrier, latch);
         }
         new ProfitEventEmitter().loadData(args[0], messageBuffers, barrier, latch);
         topProfitProcessor.close();
