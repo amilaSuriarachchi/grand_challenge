@@ -66,4 +66,15 @@ Figure \ref{time_profit} shows the execution times for both setups. In both setu
 Figure \ref{latency_profit} shows the latencies. For single JVM, latencies slightly increased with the addition of new instances as expected. But for distributed setups there is a higher latencies compared to others. This latency is due to longer queues at the \textit{TopProfitProcessor}. In our message ordering process, we can send a message to \textit{TopProfitProcessor} only if all queues are not empty. This allows some processes with less top ten profitable events to delay other process messages. This problem can  possibly fixed by adding a limit to the message queue size. On the other hand in a real time system, this event ordering many not required since event processing happens at real time. 
 
 
+\subsection{Scalability with Window Size}
 
+The grand challenge problem uses 15 minute window size for profitable cells query. However in a real world problems window sizes may required. Therefore finally we evaluated scalability of our solution with the window size.  For this experiment, we measured the throughput of the profitable cells query using a single JVM and three instances by varying the window size. Further we compared the throughput with our \textit{DynamicHeap} based solution which is not effective in lower window sizes as well.
+
+\begin{figure}[!t]
+        \centering
+        \includegraphics[width=3.0in]{window.png}
+        \caption{Throughput variation with the window size.}
+        \label{window}
+\end{figure}
+
+Figure \ref{window} shows the results. For both solutions, throughput does not drop by half, even though the window size increases 64 times. And for large windows \textit{DynamicHeap} performs better than the \textit{PriorityQueue} based one. This is due to two reasons. Firstly, all operations of \textit{DynamicHeap} are O(log(n)). Secondly, out of 173 million records there are only around 18000 unique fares. Therefore \textit{DyamicHeap} based algorithm does not consume memory beyond that. However , since \textit{PriortyQueue} based implementation keeps all values in memory it consumes more memory for large windows.

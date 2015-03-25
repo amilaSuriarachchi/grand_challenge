@@ -39,3 +39,12 @@ set term png
 set output "latency_profit.png"
 plot  "local_profit.data" using 1:3 title 'Single JVM' lw 2 with linespoints, "remote_profit.data" using 1:3 title 'Distributed' lw 2 with linespoints
 
+reset
+set notitle
+set xlabel "Window size (hours)"
+set ylabel "Events per Second (Millions)"
+set yrange [0:0.24]
+set xtics 4
+set term png
+set output "window.png"
+plot  "window.data" using 1:2 title 'PriorityQueue based' lw 3 with linespoints, "window.data" using 1:3 title 'DynamicHeap based' lw 3 with linespoints
