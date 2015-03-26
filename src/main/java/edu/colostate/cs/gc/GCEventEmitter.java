@@ -146,9 +146,9 @@ public class GCEventEmitter {
             }
 
             long totalTime = System.currentTimeMillis() - currentTime;
-            System.out.println("Display statistics ...");
-            System.out.println("Total time (ms) " + totalTime);
-            System.out.println("Total time (Min) " + totalTime * 1.0 / 60000);
+            System.out.println("Execution time (both Queries) ...");
+            System.out.println("Execution time (ms) " + totalTime);
+            System.out.println("Execution time (Min) " + totalTime * 1.0 / 60000);
 
             bufferedReader.close();
 
@@ -219,7 +219,9 @@ public class GCEventEmitter {
         new GCEventEmitter().loadData(args[0], routeBuffers, profitBuffers, barrier, latch);
 
         topRouteProcessor.close();
+        System.out.println("Route query delay ...");
         Util.displayStatistics("top_routes.txt");
+        System.out.println("Profit cell query delay ...");
         topProfitProcessor.close();
         Util.displayStatistics("top_profit_cells.txt");
 

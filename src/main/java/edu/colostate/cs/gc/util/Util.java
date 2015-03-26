@@ -74,8 +74,7 @@ public class Util {
                      break;
                 }
             }
-            System.out.println("Total lines " + totalLines);
-            System.out.println("Average delay " + totalDelay * 1.0 / totalLines);
+            System.out.println("Mean delay " + totalDelay * 1.0 / totalLines);
         } catch (FileNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (IOException e) {

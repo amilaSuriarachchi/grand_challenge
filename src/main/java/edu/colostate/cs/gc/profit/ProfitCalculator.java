@@ -49,6 +49,7 @@ public class ProfitCalculator extends TripProcessor {
     public void initialise(Container container, Map<String, String> parameters) {
         super.initialise(container, parameters);
         this.numOfProcessors = Integer.parseInt(parameters.get("processors"));
+        this.windowSize = Constants.SMALL_WINDOW_SIZE;
     }
 
     public void processEvent(TripEvent event) {

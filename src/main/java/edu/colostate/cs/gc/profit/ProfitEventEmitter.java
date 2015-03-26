@@ -143,8 +143,8 @@ public class ProfitEventEmitter implements Adaptor {
 
             long totalTime = System.currentTimeMillis() - currentTime;
             System.out.println("Display statistics ...");
-            System.out.println("Total time (ms) " + totalTime);
-            System.out.println("Total time (Min) " + totalTime * 1.0 / 60000);
+            System.out.println("Execution time (ms) " + totalTime);
+            System.out.println("Execution time (Min) " + totalTime * 1.0 / 60000);
             System.out.println("Throughput (Msg/s) " + numberOfEvents * 1000.0 / totalTime);
 
             bufferedReader.close();
