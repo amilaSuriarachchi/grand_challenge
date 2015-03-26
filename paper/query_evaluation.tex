@@ -1,6 +1,6 @@
 \section{Query evaluation}
 
-In this section, we explain how to evaluate queries with the given dataset. For this query evaluation we can use a distributed event stream processing system with the process graph as shown in Figure \ref{twonode_graph} for both queries.
+In this section, we explain how to evaluate queries with the given data set. For this query evaluation we can use a distributed event stream processing system with the process graph as shown in Figure \ref{twonode_graph} for both queries.
 
 \begin{figure}[!t]
         \centering
@@ -27,7 +27,7 @@ First both processors can be executed in same JVM with same thread. In that case
 \subsection{Parallel evaluation}
 The general way to parallelize event processing, is to partition the events according to a key and run multiple instances to process data. Therefore in this section, we explain how to parallelize the query evaluation process taking frequent route query into consideration. Same concepts can be applied to profitable cell evaluation as well.
 
-For frequent route query, route events can be partitioned using the hash code of the route object and process different route sets in different \textit{QueryEvaluators}. In such a setup, each \textit{QueryEvaluator} generates an event when the top ten routes get changed for its route set. Since this is not the desired result, we can add another process to aggregate these top result events and generate global route change events. Figure \ref{parallel} shows the possible execution patterns with the new process.
+For frequent route query, route events can be partitioned using the hash code of the route object and process different route sets in different \textit{QueryEvaluators}. In such a setup, each \textit{QueryEvaluator} generates an event when the top ten routes get changed for its route set. Since this is not the desired result, we can add another process to aggregate these top result events and generate global route change events. Figure \ref{parallel} shows, possible parallel evaluation techniques with the new process. Multiple \textit{QueryEvaluator} instances can be executed in a single JVM using multiple threads or in a distributed setup with many JVMs using TCP to communicate. 
 
 \begin{figure}[!t]
         \centering

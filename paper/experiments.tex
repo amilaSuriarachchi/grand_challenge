@@ -1,5 +1,5 @@
 \section{Experiments}
-We conducted several experiments to study the scalability of our solution. Firstly we study the throughput and mean message latency variation with the number of \textit{QueryEvaluators} for both single JVM and distributed setups. In an ideal system, we should observe linear throughput increment with a constant message latency. However there are some exceptions and we have provided our explanations on them. Finally we study the throughput variation with the window size to study the suitability of our solution for higher window sizes. All these experiments were performed on a LAN with a network bandwidth of 1Gbps and all machines were Intel(R) Xeon(R) 2.4GHz, 4 core duo machines with 16 GB of memory. 
+We conducted several experiments to study the scalability of our solution. Firstly we study the throughput and mean message latency variation with the number of \textit{QueryEvaluators} for both single JVM and distributed setups to find the scalability of the parallel evaluation. In an ideal system, we should observe linear throughput increment with a constant message latency. However there are some exceptions and we have provided our explanations on them. Finally we study the throughput variation with the window size to study the suitability of our solution for higher window sizes. All these experiments were performed on a LAN with a network bandwidth of 1Gbps and all machines were Intel(R) Xeon(R) 2.4GHz, 4 core duo machines with 16 GB of memory. 
 
 \subsection{Frequent routes query}
 
@@ -21,7 +21,7 @@ We deployed this process graph to a distributed stream processing system we have
         \label{throughput_route}
 \end{figure}
 
-Figure \ref{throughput_route} shows the throughput variation. For single JVM setup throughput increases from one instance to two instances. This is due to higher parallelism system achieves with two threads. After that throughput slightly decreases due to higher context switching with many threads. Similarly for distributed setup initially throughput increases with the number of   \textit{RouteProcessors} and achieves a steady limit. We observe two reasons for this non scalability after initial stages. Firstly, \textit{RouteProcessor} is not a computing intensive process. Secondly, there is only one \textit{RouteEventEmitter} and the speed at which it can read and send messages becomes the bottleneck. Initial throughput for distributed setup is less, due to message serialization, message deserialization and tcp overheads. 
+Figure \ref{throughput_route} shows the throughput variation. For single JVM setup throughput increases from one instance to two instances. This is due to higher parallelism system achieves with two threads. After that throughput slightly decreases due to higher context switching with many threads. Similarly for distributed setup initially throughput increases with the number of   \textit{RouteProcessors} and achieves a steady limit. We observe two reasons for this non scalability after initial stages. Firstly, \textit{RouteProcessor} is not a computing intensive process. Secondly, there is only one \textit{RouteEventEmitter} and the speed at which it can read and send messages becomes the bottleneck. Initial throughput for distributed setup is less, due to message serialization, message deserialization and TCP overheads. 
 
 \begin{figure}[!t]
         \centering
@@ -36,7 +36,7 @@ Figure \ref{latency_route} shows the latency variation. For single JVM setup lat
 
 \begin{figure}[!t]
         \centering
-        \includegraphics[width=3.0in]{profictgraph.png}
+        \includegraphics[width=3.0in]{profitgraph.png}
         \caption{Process graph to evaluate top ten profitable cells.}
         \label{profictgraph}
 \end{figure}
@@ -52,7 +52,7 @@ Similar to earlier experiment,  we deployed this process graph to our system and
         \label{throughput_profit}
 \end{figure}
  
-Figure \ref{throughput_profit} shows the throughput variation for both setups. For single JVM set up initially throughput increases, due to increment of parallelism and comes to a steady state. For distributed setup  throughput increases linearly, although it has an initial lesser throughput compared to single JVM setup due to message serialization, message deserialization and tcp overheads. 
+Figure \ref{throughput_profit} shows the throughput variation for both setups. For single JVM set up initially throughput increases, due to increment of parallelism and comes to a steady state. For distributed setup  throughput increases linearly, although it has an initial lesser throughput compared to single JVM setup due to message serialization, message deserialization and TCP overheads. 
 
 \begin{figure}[!t]
         \centering
