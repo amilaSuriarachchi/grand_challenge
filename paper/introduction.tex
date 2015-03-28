@@ -1,0 +1,30 @@
+\section{Introduction}
+Stream processing systems are particularly suitable for processing tuples that may be reported by devices, computing processes, or humans. These streams are processed to perform knowledge extraction based on the information encoded within individual tuples. Given the rate at which these tuples are generated, inability of the processing to keep pace with the data generation rates will lead to buffer overflows, dropped packets, and incorrect results. Often the data from these streams must be processed in real time and the knowledge based updated as well. 
+
+In this paper, we provide our solution to the DEBS Grand Challenge problem of processing New York taxi trip data and to perform knowledge extraction. We consider this problem in the context of stream processing where the tuples are passed through stream processing stages and the knowledge base updated in real time.
+\subsection{Research Challenges}
+Processing trip data streams and continually updating the knowledge base includes the following challenges:
+\begin{enumerate}
+	\item \textit{Data is continually arriving.} The processing of the data streams must keep pace with the data generation rates.
+	\item \textit{Regardless of the data arrival rates, at any given instant the knowledge base must be accurate and current:} Even as tuples continually arrive, the information desired by the system (the top 10 values) must reflect the current operating conditions. It is possible that as a new trip information arrives, the list of top 10 routes may change. This update must occur in real time as soon as the tuple that triggered this change is processed.
+	\item \textit{Updates to data structures must be accurate and keep pace with data arrival rates.} The time and space complexity of the data structures used to manage the knowledge base must be taken into account. Specifically, the data structure that we use must not preclude real time processing.
+\end{enumerate}
+
+\subsection{Research Questions}
+We consider several research questions in our solution to the DEBS Grand Challenge problem. These include:
+\begin{enumerate}
+	\item \textit{How can we support real-time analytics and processing over these streams?}  Processing at this scale and in real-time crosscuts algorithmic and system design. The framework must be able to scale with increase in data volumes and arrival rates.
+	\item \textit{How can we extract and update knowledge base in real time?}  Since the data streams are continually arriving the space and time complexity of the data structures become important. The data structures must be compact to conserve memory and the time-complexity of the operations to update the structures must be low.
+	\item \textit{How can we ensure high-throughput processing to support processing a large number of packets per second?} This could involve leveraging multiple instances of various processing stages. 
+\end{enumerate}
+
+\subsection{Contributions}
+We observe following key contributions, which can be used in solving future DEBS challenges as well.
+\begin{enumerate}
+	\item We have developed a set of  generic data structures capable of inserting, updating, removing and retrieving top values (order can be defined using a comparator function) with O(log(n)) time complexity. 
+	\item Using our data structures we have developed a new algorithm to find the running median with O(log(n)) time complexity. One of the key challenges of DEBS 2014 \cite{jerzak2014debs}  was to find the median of a large time window. We believe our solution is useful in such situations.
+	\item We have developed a scalable parallel evaluation technique to process queries efficiently. 
+\end{enumerate}
+
+\subsection{Paper Organization}
+The remainder of this paper is organized as follows. Section 2 provides an in-depth description about the internal data structures and the algorithms used to process the events. Section 3 describes our scalable design to process events and associated problems. Section 4 proves the soundness of our solution with experimental results. Section 5 discuss the related work including some last year solutions. Section 6 summarizes key concepts and discuss their further applications. 
