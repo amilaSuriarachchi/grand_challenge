@@ -318,7 +318,6 @@ The Grand Challenge 2015 problem focuses on processing New York city taxi trip d
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{enumerate}
         \item A set of  generic data structures capable of inserting, updating, removing and retrieving top values (order can be defined using a comparator function) with O(log n) time complexity.
-        \item An algorithm to find the running median with O(log n) time complexity. 
         \item A scalable parallel evaluation technique to process queries efficiently.
 \end{enumerate}
 }
@@ -327,30 +326,29 @@ The Grand Challenge 2015 problem focuses on processing New York city taxi trip d
   \headerbox{NodeList Data Structure}{name=nodelist,column=1,row=0, span=2}{
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{minipage}[t]{0.6\linewidth}
-
-\begin{center}
-\begin{tabular}{l l}
-\toprule
-\textbf{Operation Signature} & \textbf{Time} \\
- & \textbf{Complexity} \\
-\midrule
-add(key : Object, value : NodeValue) & O(log n) \\ 
-get(key : Object) : NodeValue & O(1) \\ 
-remove(key : Object) : NodeValue & O(log n) \\ 
-decrementPosition(key : Object) & O(log n) \\ 
-incrementPosition(key : Object) & O(log n) \\ 
-getTopValues() : List<NodeValue> & O(1) \\ 
-\bottomrule
-\end{tabular}
-\captionof{table}{Operations of \textit{NodeList} Data Structure}
-\end{center}
-
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    \toprule
+    \textbf{Operation Signature} & \textbf{Time} \\
+     & \textbf{Complexity} \\
+    \midrule
+    add(key : Object, value : NodeValue) & O(log n) \\ 
+    get(key : Object) : NodeValue & O(1) \\ 
+    remove(key : Object) : NodeValue & O(log n) \\ 
+    decrementPosition(key : Object) & O(log n) \\ 
+    incrementPosition(key : Object) & O(log n) \\ 
+    getTopValues() : List<NodeValue> & O(1) \\ 
+    \bottomrule
+    \end{tabular}
+    \vspace{0.5em}
+    \\\smaller Operations of \textit{NodeList} Data Structure
+    \end{center}
 \end{minipage}
-\hspace{1em plus 1fill}
-  \begin{minipage}[t]{0.35\linewidth}
-    \centering
-   \vspace{-2ex}
-   \includegraphics[width=0.8\linewidth, height=0.4\linewidth]{nodeliststruct.png}
+\hspace{1em}
+\begin{minipage}[t]{0.35\linewidth}
+   \centering
+   \includegraphics[width=0.8\linewidth]{nodeliststruct.png}
+   \vspace{0.5em}
    \\\smaller A Schematic Representation of \textit{NodeList} Data Structure
 \end{minipage}
 
@@ -361,14 +359,14 @@ getTopValues() : List<NodeValue> & O(1) \\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{minipage}[t]{0.45\linewidth}
     \centering
-    \vspace{1ex}
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{orderedlist.png}
+    \vspace{0.5em}
     \\\smaller A Schematic Representation of \textit{OrderList} Data Structure
 \end{minipage}
 \begin{minipage}[t]{0.45\linewidth}
     \centering
-    \vspace{1ex}
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{DinamicHeap.png}
+    \vspace{0.5em}
     \\\smaller A Schematic Representation of \textit{DynamicHeap} Data Structure
 \end{minipage}
 }
@@ -379,14 +377,14 @@ getTopValues() : List<NodeValue> & O(1) \\
 
 \begin{minipage}[t]{0.45\linewidth}
     \centering
-    \vspace{1ex}
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{sequential.png}
+    \vspace{0.5em}
     \\\smaller Different types of sequential execution
 \end{minipage}
 \begin{minipage}[t]{0.45\linewidth}
     \centering
-    \vspace{1ex}
     \includegraphics[width=0.8\linewidth, height=0.5\linewidth]{parallel.png}
+    \vspace{0.5em}
     \\\smaller Different types of parallel execution
 \end{minipage}
 
