@@ -11,7 +11,7 @@ In this section, we explain how to evaluate queries with the given data set. For
 
 \textit{EventEmitter} reads the data file and generates events with a sequence number. This sequence number is used to order \textit{QueryEvaluator} results. For real implementation, each query has its own \textit{EventEmitter} that reads each line of the data file and generates an event with the relevant information. \textit{QueryEvaluator} evaluates the query against the received event and generates top ten value changed event.  In general we can evaluate queries sequentially and in parallel. In a sequential execution, all events goes to one \textit{QueryEvaluator} instance and in a parallel execution, the event stream is partitioned using the key field and evaluate simultaneously with different \textit{QueryEvaluator} instances.
 
-\subsection{Sequential evaluation}
+\subsection{Sequential Evaluation}
 
 We can sequentially execute events either in a single Java Virtual Machine (JVM) or in different JVMs (either in one machine or different machines) using TCP sockets to communicate among process instances. Figure \ref{sequential} shows possible executions. 
 
@@ -22,9 +22,9 @@ We can sequentially execute events either in a single Java Virtual Machine (JVM)
         \label{sequential}
 \end{figure}
 
-First both processors can be executed in same JVM with same thread. In that case, both processes execute sequentially. We can make two processes parallel by executing them with two threads and communicate using a queue in same JVM or communicate using a TCP connection for different JVMs. In all these cases \textit{QueryEvaluator} processes messages sequentially and becomes the bottleneck. Next we show how to parallel \textit{QueryEvaluator} process. 
+First both processes can be executed in same JVM with same thread. In that case, both processes execute sequentially. We can make two processes parallel by executing them with two threads and communicate using a queue in same JVM or communicate using a TCP connection for different JVMs. In all these cases \textit{QueryEvaluator} processes messages sequentially and becomes the bottleneck. Next we show how to parallel \textit{QueryEvaluator} process. 
 
-\subsection{Parallel evaluation}
+\subsection{Parallel Evaluation}
 The general way to parallelize event processing, is to partition the events according to a key and run multiple instances to process data. Therefore in this section, we explain how to parallelize the query evaluation process taking frequent route query into consideration. Same concepts can be applied to profitable cell evaluation as well.
 
 For frequent route query, route events can be partitioned using the hash code of the route object and process different route sets in different \textit{QueryEvaluators}. In such a setup, each \textit{QueryEvaluator} generates an event when the top ten routes get changed for its route set. Since this is not the desired result, we can add another process to aggregate these top result events and generate global route change events. Figure \ref{parallel} shows, possible parallel evaluation techniques with the new process. Multiple \textit{QueryEvaluator} instances can be executed in a single JVM using multiple threads or in a distributed setup with many JVMs using TCP to communicate. 
@@ -44,7 +44,7 @@ For frequent route query, route events can be partitioned using the hash code of
 	\item \textbf{Intermediate top ten route events} : A route event increases the route count for that events' route. Further that can generate some expiration events which may reduce the route count for other routes. The top ten frequent routes can be changed due to these expiration events as well. Lets say in one \textit{QuerayEvaluator} case, a particular event causes two routes R1 and R2 to change and generates a top ten route change event. In the distributed setup these two routes can be in two \textit{QueryEvaluators} and that can cause two top ten route change events. These two events may result in two top ten route change events at \textit{ResultAggregator} as well instead of one. Further we observed only around 5\% of such events are generated, and system goes to the one \textit{QueryEveluator} result after all such event are being executed. Solution for such a problem may depend on the nature in which a real application, uses these results in decision making process. Therefore we could not provide any fix for this problem.
 \end{enumerate}
 
-Algorithm \ref{aggregate_algorithm} shows the algorithm for ResultAggregator with above fixes. First it removes the expired keys. Then it updates the existing values or adds new values and moves the position in the list accordingly. Finally it generates an event if there is a change to the top list.
+Algorithm \ref{aggregate_algorithm} depicts the algorithm for \textit{ResultAggregator} with the above fixes. The algorithm first removes the expired keys. Then it updates the existing values or adds new values and moves the position in the list accordingly. Finally it generates an event if there is a change to the top list.
 
 
 \begin{algorithm}
