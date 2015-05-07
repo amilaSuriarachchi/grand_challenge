@@ -112,15 +112,15 @@ Shrideep Pallickara\\
 
 \maketitle
 \begin{abstract}
-Processing complex queries on unbounded event streams in real time, is a challenge for many data processing systems. These systems are expected to process data with reduced latency to generate real time-events, and at high throughput to minimize the required hardware. In this regard, DEBS Grand Challenge 2015 focuses on evaluating two queries (frequent routes and  profitable cells) in real time with low latency and high throughput. These queries involve processing windows of thousands of records. Firstly, such processing demands efficient data structures and algorithms to minimize the processing overhead. Secondly, the system should partition data to evaluate them in parallel to make it scalable.
+Processing complex queries on unbounded event streams in real-time, is a challenge for many data processing systems. These systems are expected to process data with reduced latency to generate real-time events, and at high throughput to minimize the required hardware. In this regard, DEBS Grand Challenge 2015 focuses on evaluating two queries (frequent routes and  profitable cells) in real-time with low latency and high throughput. These queries involve processing windows of thousands of records. Firstly, such processing demands efficient data structures and algorithms to minimize the processing overhead. Secondly, the system should partition data to evaluate them in parallel to make it scalable.
 
-In this paper, we present a set of data structures that we designed to evaluate the aforementioned queries with O(log n) time complexity and a data partitioning technique to evaluate them in parallel. We then evaluate our solution on a signal machine as well as in a distributed setting in a commodity cluster of machines over a 1Gbps LAN. We are able to process the frequent routes query with the 173 million trips dataset within 5 minutes with less than 4 millisecond latency and the profitable cells query with same dataset within 11 minutes with less than 5 millisecond latency.
+In this paper, we present a set of data structures that we designed to evaluate the aforementioned queries with O(log n) time complexity and a data partitioning technique to evaluate them in parallel. We then evaluate our solution on a single machine as well as in a distributed setting in a commodity cluster of machines over a 1Gbps LAN. We were able to process the frequent routes query with the 173 million trips dataset within 5 minutes with less than 4 millisecond latency and the profitable cells query with same dataset within 11 minutes with less than 5 millisecond latency.
 \end{abstract}
 
 % A category with the (minimum) three required fields
+\category{C.2.4}{Distributed Systems}{Distributed applications}
 %A category including the fourth, optional field follows...
-
-\keywords{DEBS Grand Challenge, Distributed Event Processing, Time Complexity} % NOT required for Proceedings
+\keywords{Distributed Event Processing, Real-time analytics, Running median, Time Complexity, Event Stream Processing} % NOT required for Proceedings
 
 \input{introduction}
 \input{query_implementation}

@@ -10,6 +10,7 @@ In this section, we elaborate how we have implemented the query logic to achieve
 Operation Signature & Time Complexity \\ \hline \hline
 add(key : Object, value : NodeValue) & O(log n) \\ \hline 
 get(key : Object) : NodeValue & O(1) \\ \hline
+containsKey(key : Object) : boolean & O(1) \\ \hline
 remove(key : Object) : NodeValue & O(log n) \\ \hline
 decrementPosition(key : Object) & O(log n) \\ \hline
 incrementPosition(key : Object) & O(log n) \\ \hline
@@ -20,7 +21,7 @@ getTopValues() : List<NodeValue> & O(1) \\ \hline
 
 Table \ref{nodelist_api} shows the operations of this data structure. The \textit{NodeValue} is an interface to plug any user defined type as a value. For an example, the route query can use a \textit{RouteCount} object to keep route count while profitable cells query can use \textit{CellProfit} object to keep track of fare details. This interface contains a method called \texttt{compare} to define the order of the values. The \textit{NodeList} data structure provides the notion of a sorted values starting from position 0 (highest value) to its users. The \texttt{decrementPostion} operation moves the corresponding value towards position 0 until the correct position according to sorted order. Therefore this method should be called after increasing the value of an existing object. Similarly \texttt{incrementPosition} operation can be used to move a value to correct position after decreasing the value of an existing object. \texttt{GetTopValues} operation returns the top ten values of the list. The query algorithm sections further elaborate on the usage of these methods.
 
-One way of implementing this data structure is to use a heap. A heap supports adding and extracting maximum value operations in O(log n) time. However, since this application requires top 10 values, we need to retrieve maximum value ten times and insert them back. On the other hand if we use a doubly linked list to store values, it will take O(n) time for  \texttt{decrementPostion} and \texttt{incrementPosition} operations. Therefore we can use a doubly linked list to keep first 10 values (this makes time complexity for all operations with this data structure O(1)) and a heap to keep other values to avoid above problems.  A \textit{Map} which points to values can be used to retrieve values using a key.
+One way of implementing this data structure is to use a heap. A heap supports adding and extracting maximum value operations in O(log n) time. However, since this application requires top 10 values, we need to retrieve maximum value ten times and insert them back. On the other hand if we use a doubly linked list to store values, it will take O(n) time for  \texttt{decrementPostion} and \texttt{incrementPosition} operations. Therefore we can use a doubly linked list to keep first 10 values (this makes time complexity for all operations with this data structure O(1)) and a heap to keep other values to avoid above problems.  
 
 The \textit{NodeList} data structure uses two data structures called \textit{OrderedList} to keep first 10 values and \textit{DynamicHeap} to keep other values. In this way it has to change only the last value of \textit{OrderedList} and maximum value of \textit{DynamicHeap} as required. Following sections describes how these data structures have been implemented with their operations.
 
@@ -85,9 +86,9 @@ Table \ref{dynamicheap_api} shows the operations of the \textit{DynamicHeap} dat
 \subsection{Finding the Runing Median}
 In general, we can find the runing median using two heaps. One to keep values greater than the current median and one to keep values less than the current median. An implementation of this algorithm using two \textit{java.util.PriorityQueue}s have an O(log n) time complexity for add operation and O(n) time complexity for remove operation (\texttt{remove} operation of \textit{java.util.PriorityQueue} takes O(n) time).  We overcame this issue using \textit{DynamicHeap} to keep values. In our solution, we use value as the key to insert and delete from the \textit{DynamicHeap} and keep each value with its count (same value can be repeated) in the \textit{DynamicHeap}. In the worst case this has a O(log n) time complexity for both the add and remove operations and in the best case (i.e value is already present and it does not cause a median change) it has O(1) time complexity.
 
-\subsection{Frequent Route Query}
+\subsection{Frequent Routes Query}
 
-The frequent route query entails finding the most frequent routes within the last 30 minutes. Algorithm \ref{frequent_route_algorithm} shows the algorithm to process this query using the \textit{NodeList} data structure and a queue to keep the events for the time window.  Since queue operations are supported in O(1) time, query evaluations happen in O(log n) time. Algorithm \ref{frequent_route_algorithm} shows the basic algorithm to evaluate the query an event. This algorithm assumes there is a global \textit{NodeList} object and route counts are stored in an object called \textit{RouteCount}. 
+The frequent routes query entails finding the most frequent routes within the last 30 minutes. Algorithm \ref{frequent_route_algorithm} shows the algorithm to process this query using the \textit{NodeList} data structure and a queue to keep the events for the time window.  Since queue operations are supported in O(1) time, query evaluations happen in O(log n) time. Algorithm \ref{frequent_route_algorithm} shows the basic algorithm to evaluate the query for an event. This algorithm assumes there is a global \textit{NodeList} object and route counts are stored in an object called \textit{RouteCount}. 
 
 \begin{algorithm}
 \caption{Algorithm to generate top 10 frequent route change events}

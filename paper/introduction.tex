@@ -6,9 +6,9 @@ The first query is to find the events that change the top ten routes within last
 
 \subsection{Research Challenges}
 
-If we consider an application that must process the 173 million trips dataset within an year, it would be a trivial task and several simple implementations would satisfy that requirement. However if we consider an application that must process these data within minutes with the added constraint of minimal latency to process each event, we observe following research challenges.
+If we consider an application that must process the 173 million trips dataset within an year, several simple implementations would satisfy that requirement. However if we consider an application that must process these data within minutes with the added constraint of minimal latency to process each event, we observe following research challenges.
 \begin{enumerate}
-	\item \textit{Handling thousands of values in real time :}  An algorithm with O(n) time complexity will not scale for thousands. How can we design an algorithm with O(log n) time complexity?
+	\item \textit{Handling thousands of values in real-time :}  An algorithm with O(n) time complexity will not scale for thousands. How can we design an algorithm with O(log n) time complexity?
 	\item \textit{Parallel evaluation :}  This application does not inherently support parallel evaluation. Partitioning route sets and cell sets triggers events for subsets, but application requires the events with whole sets. Therefore is it possible to partition data and still generate required results to support parallelism?  
 \end{enumerate}
 
@@ -18,10 +18,10 @@ We started our work seeking answers for the above challenges. First we evaluated
 
 
 \subsection{Contributions}
-We observe following key contributions, which can be used in solving future DEBS challenges as well.
+We observe following key contributions, which can be used in solving future DEBS grand challenges as well.
 \begin{enumerate}
 	\item We have designed a set of  generic data structures capable of inserting, updating, removing and retrieving top values (order can be defined using a comparator function) with O(log n) time complexity. 
-	\item Using our data structures we have developed an algorithm to find the running median with O(log n) time complexity. One of the key challenges of DEBS 2014 \cite{jerzak2014debs}  was to find the median of a large time window. We believe our solution is useful in such situations.
+	\item Using our data structures we have developed an algorithm to find the running median with O(log n) time complexity. One of the key challenges of 2014 problem \cite{jerzak2014debs}  was to find the median of a large time window. We believe our solution is useful in such situations.
 	\item We have developed a scalable parallel evaluation technique to process queries efficiently. 
 \end{enumerate}
 
