@@ -146,7 +146,7 @@
 
 \title[Grand Challenge 2015]{DEBS Grand Challenge: A High-Throughput, Scalable Solution for Calculating Frequent Routes and Profitability of New York Taxis} % The short title appears at the bottom of every slide, the full title is only on the title page
 
-\author{Amila Suriarachchi} % Your name
+\author[Amila Suriarachchi]{Amila Suriarachchi \\ Shrideep Pallickara } % Your name
 \institute[CSU] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
 {
 Colorado State University \\ % Your institution for the title page
@@ -154,7 +154,7 @@ Colorado State University \\ % Your institution for the title page
 \textit{amilas@cs.colostate.edu} % Your email address
 \medskip
 }
-\date{May 4, 2015} % Date, can be changed to a custom date
+\date{\today} % Date, can be changed to a custom date
 
 \begin{document}
 
@@ -252,21 +252,11 @@ getTopValues() : List \textless NodeValue \textgreater & O(1) \\ \hline
 
 \end{frame}
 
-
-\begin{frame}
-\frametitle{OrderedList Data Structure}
-
-\begin{figure}
-        \includegraphics[width=0.8\linewidth]{orderedlist.png}
-\end{figure}
-
-\end{frame}
-
 \begin{frame}
 \frametitle{DynamicHeap Data Structure}
 
 \begin{figure}
-        \includegraphics[width=0.8\linewidth]{DinamicHeap.png}
+        \includegraphics[width=0.7\linewidth]{DinamicHeap.png}
 \end{figure}
 
 \end{frame}
@@ -396,7 +386,8 @@ now $\gets$ nodeList.getTopValues()\;
         \end{subfigure}
 \end{figure}
 
-\footnotesize Initially throughput increases with the number of route process instances and comes to a steady state. For distributed setup latency comes to a steady state with higher process instances. 
+\footnotesize For distributed setup throughput increases up to 4 processors while latency remain in a constant after 5 processors. For single JVM setup throughput increases up to 2 nodes and slightly decreases with the number of processors while latency slightly increases with the number of processors.
+ 
 
 \end{frame}
 
@@ -413,7 +404,30 @@ now $\gets$ nodeList.getTopValues()\;
         \end{subfigure}
 \end{figure}
 
-\footnotesize Initially throughput increases with the number of route process instances and comes to a steady state. For distributed setup latency comes to a steady state with higher process instances.
+\footnotesize For distributed set up throughput linearly increases and latency increases with higher number of calculators. For single JVM set up throughput linearly increases up to 3 instances and latency slightly increases with the number of calculators. 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Scalability with Window Size}
+
+\begin{figure}
+        \includegraphics[width=0.6\linewidth]{window.png}
+\end{figure}
+
+\footnotesize Both implementations scale even for 64h windows. DynamicHeap based algorithm performs better at higher window sizes.
+
+\end{frame}
+
+\section{Conclusion}
+
+\begin{frame}
+\frametitle{Conclusion}
+\begin{itemize}
+        \item Our queries execute with O(log n) time complexity and hence scale with window size.
+        \item Our partitioning technique can be used to scale up the system while producing the desired results. 
+	\item We propose an algorithm to find the running median with O(log n) time complexity.
+\end{itemize}
 
 \end{frame}
 
