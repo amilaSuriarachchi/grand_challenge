@@ -15,7 +15,7 @@
 %	PACKAGES AND THEMES
 %----------------------------------------------------------------------------------------
 
-\documentclass{beamer}
+\documentclass[]{beamer}
 
 \mode<handout>
 {
@@ -178,8 +178,8 @@ Colorado State University \\ % Your institution for the title page
 \begin{frame}
 \frametitle{Problem Characteristics}
 \begin{itemize}
-	\item The whole dataset contains 173 million records within an year
-	\item There are 899010 unique routes and 34 unique cells
+	\item The whole dataset contains 173 million records within year 2013
+	\item There are 899010 unique routes and 56697 unique cells
 	\item 30 minute time window contains around 10000 events assuming equal event distribution
 		\begin{itemize}
 			\item Thousands of route and cell details need to process with each event
@@ -316,6 +316,26 @@ now $\gets$ nodeList.getTopValues()\;
 
 
 \end{frame}
+
+\begin{frame}
+\frametitle{Profitable Cells Query}
+\begin{itemize}
+        \item Median fare calculation
+		\begin{itemize}
+			\item Use the PriorityQueue based running median algorithm
+		\end{itemize}
+        \item Handling empty taxis
+		\begin{itemize}
+                        \item Generate two events (Pickup event and Drop event) for each dataset event
+                \end{itemize}
+        \item Handling drop event expiration
+		\begin{itemize}
+                        \item Keep taxi ids within the profitable cell object
+                \end{itemize}
+\end{itemize}
+
+\end{frame}
+
 
 \section{Query evaluation}
 
