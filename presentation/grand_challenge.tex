@@ -15,7 +15,7 @@
 %	PACKAGES AND THEMES
 %----------------------------------------------------------------------------------------
 
-\documentclass[]{beamer}
+\documentclass[handout]{beamer}
 
 \mode<handout>
 {
@@ -151,7 +151,7 @@
 {
 Colorado State University \\ % Your institution for the title page
 \medskip
-\textit{amilas@cs.colostate.edu} % Your email address
+\textit{\{amilas,shrideep\}@cs.colostate.edu} % Your email address
 \medskip
 }
 \date{\today} % Date, can be changed to a custom date
@@ -207,21 +207,25 @@ Colorado State University \\ % Your institution for the title page
 
 \end{frame}
 
-\begin{frame}
-\frametitle{Contributions}
-\begin{itemize}
-        \item We have designed a set of  generic data structures capable of inserting, updating, removing and retrieving top values (order can be defined using a comparator function) with O(log n) time complexity
-        \item Using our data structures we have developed an algorithm to find the running median with O(log n) time complexity 
-	\item We have developed a scalable parallel evaluation technique to process queries efficiently
-\end{itemize}
-
-\end{frame}
+%\begin{frame}
+%\frametitle{Contributions}
+%\begin{itemize}
+%        \item We have designed a set of  generic data structures capable of inserting, updating, removing and retrieving top values (order can be defined using a comparator function) with O(log n) time complexity
+%        \item Using our data structures we have developed an algorithm to find the running median with O(log n) time complexity 
+%	\item We have developed a scalable parallel evaluation technique to process queries efficiently
+%\end{itemize}
+%\end{frame}
 
 \section{Query Implementation}
 
 
 \begin{frame}
-\frametitle{NodeList Data Structure}
+\frametitle{NodeList Data Structure (1/2)}
+
+\begin{itemize}
+        \item Provides notion of a sorted list of values starting from position 0
+        \item Values can be accessed using the key (eg. Route, Cell)
+\end{itemize}
 
 \begin{table}
 \centering
@@ -237,6 +241,16 @@ getTopValues() : List \textless NodeValue \textgreater & O(1) \\ \hline
 \end{tabular}
 \end{table}
 
+\end{frame}
+
+\begin{frame}
+\frametitle{NodeList Data Structure (2/2)}
+
+\begin{itemize}
+        \item \textit{OrderedList} data structure is used to keep first ten values
+        \item \textit{DynamicHeap} data structure is used to keep other values
+\end{itemize}
+
 \begin{figure}
         \includegraphics[width=0.8\linewidth]{nodeliststruct.png}
 \end{figure}
@@ -246,8 +260,13 @@ getTopValues() : List \textless NodeValue \textgreater & O(1) \\ \hline
 \begin{frame}
 \frametitle{OrderedList Data Structure}
 
+\begin{itemize}
+        \item A Doubly linked List is used to store values
+        \item A Map is used to retrieve \textit{ListNode} objects with O(1) time
+\end{itemize}
+
 \begin{figure}
-        \includegraphics[width=0.8\linewidth]{orderedlist.png}
+        \includegraphics[width=0.7\linewidth]{orderedlist.png}
 \end{figure}
 
 \end{frame}
@@ -255,27 +274,50 @@ getTopValues() : List \textless NodeValue \textgreater & O(1) \\ \hline
 \begin{frame}
 \frametitle{DynamicHeap Data Structure}
 
+\begin{itemize}
+        \item A Heap is used to store values
+        \item \textit{HeapNode} keeps the position of the array to remove, moveUp and moveDown objects with O(log n) time
+	\item A Map is used to retrieve \textit{HeapNode} objects with O(1) time
+\end{itemize}
+
 \begin{figure}
-        \includegraphics[width=0.7\linewidth]{DinamicHeap.png}
+        \includegraphics[width=0.6\linewidth]{DinamicHeap.png}
 \end{figure}
 
 \end{frame}
 
 \begin{frame}
-\frametitle{Runing Median (1/2)}
+\frametitle{Running Median (1/2)}
+
+\begin{itemize}
+        \item Two heaps are used to keep values greater than the current median and less than the current median
+        \item A \textit{PriorityQueue} based implementation
+		\begin{itemize}
+        		\item Takes O(log n) time to add a value 
+        		\item Takes O(n) time to remove a value
+		\end{itemize}
+\end{itemize}
 
 \begin{figure}
-        \includegraphics[width=0.8\linewidth]{runningmediang.png}
+        \includegraphics[width=0.6\linewidth]{runningmediang.png}
 \end{figure}
 
 \end{frame}
 
 
 \begin{frame}
-\frametitle{Runing Median (2/2)}
+\frametitle{Running Median (2/2)}
+
+\begin{itemize}
+        \item Two heaps are used to keep values greater than the current median and less than the current median
+        \item A \textit{DynamicHeap} based implementation with value as the heap key and count as the heap value 
+                \begin{itemize}
+                        \item Takes O(log n) time to add and remove a value
+                \end{itemize}
+\end{itemize}
 
 \begin{figure}
-        \includegraphics[width=0.8\linewidth]{runningmediand.png}
+        \includegraphics[width=0.6\linewidth]{runningmediand.png}
 \end{figure}
 
 \end{frame}
@@ -288,8 +330,8 @@ getTopValues() : List \textless NodeValue \textgreater & O(1) \\ \hline
 before $\gets$ nodeList.getTopValues()\;
 window.add(event)\;
 \eIf{ nodeList.containsKey(event.route) }{
-        routCount $\gets$ nodeList.get(event.route)\;
-        routCount.count++\;
+        routeCount $\gets$ nodeList.get(event.route)\;
+        routeCount.count++\;
         nodeList.decrementPosition(event.route)\;
 }{
         nodeList.add(event.route, new RouteCount(1))\;
@@ -297,9 +339,9 @@ window.add(event)\;
 
 \While{ there exists expired events }{
         expEvent $\gets$ window.poll()\;
-        routCount $\gets$ nodeList.get(expEvent.route)\;
-        routCount.count--\;
-        \eIf{ routCount.count is 0 }{
+        routeCount $\gets$ nodeList.get(expEvent.route)\;
+        routeCount.count--\;
+        \eIf{ routeCount.count is 0 }{
                 nodelist.remove(expEvent.route)\;
         }{
                 nodeList.incrementPosition(expEvent.route)\;
@@ -322,7 +364,7 @@ now $\gets$ nodeList.getTopValues()\;
 \begin{itemize}
         \item Median fare calculation
 		\begin{itemize}
-			\item Use the PriorityQueue based running median algorithm
+			\item Use the \textit{PriorityQueue} based running median algorithm
 		\end{itemize}
         \item Handling empty taxis
 		\begin{itemize}
@@ -342,14 +384,33 @@ now $\gets$ nodeList.getTopValues()\;
 \begin{frame}
 \frametitle{Sequential Evaluation}
 
+\begin{itemize}
+        \item One \textit{QueryEvaluator} instance is used
+        \item \textit{EventEmitter} and \textit{QueryEvaluator} can be executed in,
+                \begin{itemize}
+                        \item A single JVM using one thread
+                        \item A single JVM using different threads with queues to communicate
+                        \item A distributed setup with TCP to communicate 
+                \end{itemize}
+\end{itemize}
+
 \begin{figure}
-        \includegraphics[width=0.8\linewidth]{sequential.png}
+        \includegraphics[width=0.7\linewidth]{sequential.png}
 \end{figure}
 
 \end{frame}
 
 \begin{frame}
 \frametitle{Parallel Evaluation}
+
+\begin{itemize}
+        \item Multiple \textit{QueryEvaluator} instances are used
+        \item \textit{EventEmitter} and \textit{QueryEvaluators} can be executed in,
+                \begin{itemize}
+                        \item A Single JVM using different threads with queues to communicate
+                        \item A distributed setup with TCP to communicate
+                \end{itemize}
+\end{itemize}
 
 \begin{figure}
         \includegraphics[width=0.8\linewidth]{parallel.png}
