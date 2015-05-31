@@ -76,6 +76,7 @@ public class ProfitEventEmitter implements Adaptor {
             System.out.println("Start processing messages ...");
             long currentTime = System.currentTimeMillis();
 
+            boolean isEmitEvent =  messageBuffers.length > 1;
 
             while ((line = bufferedReader.readLine()) != null) {
 
@@ -83,6 +84,7 @@ public class ProfitEventEmitter implements Adaptor {
                     String[] values = line.split(",");
 
                     PaymentEvent pickUpEvent = new PaymentEvent();
+                    pickUpEvent.setEmitEvent(isEmitEvent);
                     pickUpEvent.setSeqNo(seqNo);
                     seqNo++;
 
@@ -107,8 +109,7 @@ public class ProfitEventEmitter implements Adaptor {
                             numberOfEvents++;
 
                             PaymentEvent dropOffEvent = new PaymentEvent();
-                            dropOffEvent.setSeqNo(seqNo);
-                            seqNo++;
+                            dropOffEvent.setSeqNo(pickUpEvent.getSeqNo());
 
                             dropOffEvent.setStartTime(System.currentTimeMillis());
                             dropOffEvent.setMedallion(pickUpEvent.getMedallion());
@@ -165,8 +166,8 @@ public class ProfitEventEmitter implements Adaptor {
     }
 
     private Cell getCell(double longitude, double latitude) {
-        if ((longitude < Constants.RIGHT_LONGITUDE) && (longitude > Constants.LEFT_LONGITUDE) &&
-                (latitude < Constants.TOP_LATITUDE) && (latitude > Constants.BOTTOM_LATITUDE)) {
+        if ((longitude <= Constants.RIGHT_LONGITUDE) && (longitude >= Constants.LEFT_LONGITUDE) &&
+                (latitude <= Constants.TOP_LATITUDE) && (latitude >= Constants.BOTTOM_LATITUDE)) {
 
             int column = (int) Math.floor((longitude - Constants.LEFT_LONGITUDE) / Constants.EAST_CELL_SIZE_250);
             int row = (int) Math.floor((Constants.TOP_LATITUDE - latitude) / Constants.SOUTH_CELL_SIZE_250);

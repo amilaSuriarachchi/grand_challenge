@@ -24,9 +24,6 @@ public class ProfitCalculator extends TripProcessor {
     private Queue<PaymentEvent> dropWindow = new LinkedList<PaymentEvent>();
     private NodeList nodeList = new NodeList(2048);
 
-    private long startTime;
-    private boolean isStarted;
-
     private Set<Cell> lastCellSet;
     private List<NodeValue> lastCellList;
 
@@ -57,11 +54,6 @@ public class ProfitCalculator extends TripProcessor {
         PaymentEvent paymentEvent = (PaymentEvent) event;
 
         paymentEvent.processDropOffTime();
-
-        if (!this.isStarted) {
-            this.isStarted = true;
-            this.startTime = paymentEvent.getDropOffTimeMillis();
-        }
 
         if (paymentEvent.isPayEvent()) {
 
@@ -116,24 +108,15 @@ public class ProfitCalculator extends TripProcessor {
 
                 }
             }
+
+            if (!paymentEvent.isEmitEvent()){
+                return;
+            }
+
+
         } else {
             // this is just the drop off information. i.e an empty taxi has arrived to this location.
             this.dropWindow.add(paymentEvent);
-
-            Cell dropOffNode = paymentEvent.getDropOffCell();
-
-            if (!this.nodeList.containsKey(dropOffNode)) {
-                ProfitCellNode profitCellNode = new ProfitCellNode(dropOffNode, paymentEvent.getSeqNo());
-                profitCellNode.addTaxi(paymentEvent.getMedallion());
-                this.nodeList.add(dropOffNode, profitCellNode);
-                // when adding a node node list structure take care about the position.
-            } else {
-                ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(dropOffNode);
-                profitCellNode.setSeqNo(paymentEvent.getSeqNo());
-                profitCellNode.addTaxi(paymentEvent.getMedallion());
-                profitCellNode.increaseEmptyTaxi();
-                this.nodeList.incrementPosition(dropOffNode);
-            }
 
             while ((this.dropWindow.size() > 0)
                     && (this.dropWindow.peek().isExpired(paymentEvent.getDropOffTimeMillis(), this.windowSize * 2))) {
@@ -159,25 +142,46 @@ public class ProfitCalculator extends TripProcessor {
                     }
                 }
             }
+
+            Cell dropOffNode = paymentEvent.getDropOffCell();
+
+            if (!this.nodeList.containsKey(dropOffNode)) {
+                ProfitCellNode profitCellNode = new ProfitCellNode(dropOffNode, paymentEvent.getSeqNo());
+                profitCellNode.addTaxi(paymentEvent.getMedallion());
+                this.nodeList.add(dropOffNode, profitCellNode);
+                // when adding a node node list structure take care about the position.
+            } else {
+                ProfitCellNode profitCellNode = (ProfitCellNode) this.nodeList.get(dropOffNode);
+                profitCellNode.setSeqNo(paymentEvent.getSeqNo());
+                if (!profitCellNode.containsTaxi(paymentEvent.getMedallion())) {
+                    profitCellNode.addTaxi(paymentEvent.getMedallion());
+                    profitCellNode.increaseEmptyTaxi();
+                    this.nodeList.incrementPosition(dropOffNode);
+                } else {
+                    // since we set the sequence number there is a possibility to cell node can move up.
+                    this.nodeList.decrementPosition(dropOffNode);
+                }
+
+            }
+
         }
 
         List<NodeValue> currentList = this.nodeList.getTopValues();
 
-        if (!Util.isSame(this.lastCellList, currentList) &&
-                (paymentEvent.getDropOffTimeMillis() - this.startTime > Constants.SMALL_WINDOW_SIZE)) {
+        if (!Util.isSame(this.lastCellList, currentList)) {
 
             Set<Cell> currentCellSet = getCellSet(currentList);
             this.lastCellSet.removeAll(currentCellSet);
 
             TopProfitsEvent topProfitsEvent = new TopProfitsEvent(
-                                                paymentEvent.getStartTime(),
-                                                paymentEvent.getPickUpTime(),
-                                                paymentEvent.getDropOffTimeMillis());
+                    paymentEvent.getStartTime(),
+                    paymentEvent.getPickUpTime(),
+                    paymentEvent.getDropOffTimeMillis());
 
             topProfitsEvent.setSeqNo(paymentEvent.getSeqNo());
 
             int processorID;
-            if (paymentEvent.isPayEvent()){
+            if (paymentEvent.isPayEvent()) {
                 processorID = paymentEvent.getPickUpCell().hashCode() % this.numOfProcessors;
             } else {
                 processorID = paymentEvent.getDropOffCell().hashCode() % this.numOfProcessors;
@@ -185,14 +189,14 @@ public class ProfitCalculator extends TripProcessor {
             topProfitsEvent.setProcessorID(processorID);
             topProfitsEvent.setRemovedKeys(this.lastCellSet);
 
-            for (NodeValue nodeValue : currentList){
-               ProfitCellNode profitCellNode = (ProfitCellNode) nodeValue;
+            for (NodeValue nodeValue : currentList) {
+                ProfitCellNode profitCellNode = (ProfitCellNode) nodeValue;
                 topProfitsEvent.addNodeValue(
                         new TopProfitCellNode(profitCellNode.getProfitability(),
-                                              profitCellNode.getMidFare(),
-                                              profitCellNode.getNumOfEmptyTaxis(),
-                                              profitCellNode.getSeqNo(),
-                                              profitCellNode.getCell()));
+                                profitCellNode.getMidFare(),
+                                profitCellNode.getNumOfEmptyTaxis(),
+                                profitCellNode.getSeqNo(),
+                                profitCellNode.getCell()));
             }
 
             this.processor.processEvent(topProfitsEvent);

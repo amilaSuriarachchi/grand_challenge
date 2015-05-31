@@ -17,4 +17,6 @@ public interface NodeValue   {
 
     public NodeValue getClone();
 
+    public boolean isValid();
+
 }

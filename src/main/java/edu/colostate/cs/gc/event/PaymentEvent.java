@@ -21,6 +21,7 @@ public class PaymentEvent extends TripEvent {
     private boolean isPayEvent;
     private String dropOffTime;
     private String pickUpTime;
+    private boolean isEmitEvent;
 
     private long dropOffTimeMillis;
 
@@ -153,5 +154,13 @@ public class PaymentEvent extends TripEvent {
 
     public void setDropOffTimeMillis(long dropOffTimeMillis) {
         this.dropOffTimeMillis = dropOffTimeMillis;
+    }
+
+    public boolean isEmitEvent() {
+        return isEmitEvent;
+    }
+
+    public void setEmitEvent(boolean emitEvent) {
+        isEmitEvent = emitEvent;
     }
 }

@@ -155,4 +155,8 @@ public class TopProfitCellNode implements NodeValue {
     public void setNumOfEmptyTaxis(int numOfEmptyTaxis) {
         this.numOfEmptyTaxis = numOfEmptyTaxis;
     }
+
+    public boolean isValid() {
+        return true;
+    }
 }

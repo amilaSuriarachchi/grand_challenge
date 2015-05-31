@@ -136,7 +136,7 @@ public class OrderedList {
         ListNode currentNode = this.head;
 
         // this list will keep only maximum of ten values.
-        while (currentNode != null) {
+        while (currentNode != null && currentNode.getNodeValue().isValid()) {
             nodeValues.add(currentNode.getNodeValue().getClone());
             currentNode = currentNode.getNextNode();
         }

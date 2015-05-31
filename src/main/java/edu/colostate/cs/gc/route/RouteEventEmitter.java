@@ -138,8 +138,8 @@ public class RouteEventEmitter implements Adaptor {
     }
 
     private Cell getCell(double longitude, double latitude) {
-        if ((longitude < Constants.RIGHT_LONGITUDE) && (longitude > Constants.LEFT_LONGITUDE) &&
-                (latitude < Constants.TOP_LATITUDE) && (latitude > Constants.BOTTOM_LATITUDE)) {
+        if ((longitude <= Constants.RIGHT_LONGITUDE) && (longitude >= Constants.LEFT_LONGITUDE) &&
+                (latitude <= Constants.TOP_LATITUDE) && (latitude >= Constants.BOTTOM_LATITUDE)) {
 
             int column = (int) Math.floor((longitude - Constants.LEFT_LONGITUDE) / Constants.EAST_CELL_SIZE_500);
             int row = (int) Math.floor((Constants.TOP_LATITUDE - latitude) / Constants.SOUTH_CELL_SIZE_500);

@@ -122,4 +122,8 @@ public class TopRouteCount implements NodeValue {
     public NodeValue getClone() {
         return new TopRouteCount(this.count, this.route, this.seqNo);
     }
+
+    public boolean isValid() {
+        return true;
+    }
 }

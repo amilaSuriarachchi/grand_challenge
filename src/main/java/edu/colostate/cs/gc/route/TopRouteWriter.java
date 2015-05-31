@@ -30,6 +30,11 @@ public class TopRouteWriter extends EventWriter {
                 TopRouteCount routeCount = (TopRouteCount) nodeValue;
                 this.eventWriter.write(routeCount.getRoute().toString());
             }
+
+            for (int i = 0; i < 10 - nodeValues.size(); i++) {
+                this.eventWriter.write("NULL,");
+            }
+
             this.eventWriter.write(delay + "");
             this.eventWriter.newLine();
         } catch (IOException e) {

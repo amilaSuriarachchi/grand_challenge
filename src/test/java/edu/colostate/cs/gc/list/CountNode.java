@@ -56,4 +56,8 @@ public class CountNode implements NodeValue {
     public NodeValue getClone() {
         return new CountNode(this.value, this.route);
     }
+
+    public boolean isValid() {
+        return true;
+    }
 }

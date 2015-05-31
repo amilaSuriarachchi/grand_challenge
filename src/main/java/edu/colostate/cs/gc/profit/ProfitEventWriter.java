@@ -28,10 +28,14 @@ public class ProfitEventWriter extends EventWriter {
             this.eventWriter.write(this.simpleDateFormat.format(new Date(dropOffTime)) + ",");
             for (NodeValue nodeValue : nodeValues) {
                 TopProfitCellNode profitCellNode = (TopProfitCellNode) nodeValue;
-                this.eventWriter.write(profitCellNode.getCell().toString() + ",");
-                this.eventWriter.write(profitCellNode.getNumOfEmptyTaxis() + ",");
-                this.eventWriter.write(profitCellNode.getMidFare() + ",");
-                this.eventWriter.write(profitCellNode.getProfitability() + ",");
+                this.eventWriter.write(profitCellNode.getCell().toString() + "-,");
+                this.eventWriter.write(profitCellNode.getNumOfEmptyTaxis() + "-,");
+                this.eventWriter.write(profitCellNode.getMidFare() + "-,");
+                this.eventWriter.write(profitCellNode.getProfitability() + "-,");
+            }
+
+            for (int i = 0; i < 10 - nodeValues.size(); i++){
+                this.eventWriter.write("NULL,");
             }
             this.eventWriter.write(delay + "");
             this.eventWriter.newLine();

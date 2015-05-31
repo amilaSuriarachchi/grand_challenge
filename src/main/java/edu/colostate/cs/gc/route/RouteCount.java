@@ -135,4 +135,8 @@ public class RouteCount implements NodeValue {
     public NodeValue getClone() {
         return new RouteCount(this.count, this.route, this.seqNo);
     }
+
+    public boolean isValid() {
+        return true;
+    }
 }

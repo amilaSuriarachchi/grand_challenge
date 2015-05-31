@@ -227,4 +227,8 @@ public class ProfitCellNode implements NodeValue {
     public void setSeqNo(int seqNo) {
         this.seqNo = seqNo;
     }
+
+    public boolean isValid() {
+        return this.profitability > 0;
+    }
 }

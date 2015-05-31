@@ -26,9 +26,6 @@ public class RouteProcessor extends TripProcessor {
 
     NodeList nodeList = new NodeList(8192);
 
-    private boolean isStarted = false;
-    private long startTime;
-
     private Set<Route> lastRouteSet;
     private List<NodeValue> lastRouteList;
 
@@ -59,11 +56,6 @@ public class RouteProcessor extends TripProcessor {
         // Upto here drop off time comes as a string. convert it to milliseconds.
         dropOffEvent.processDropOffTime();
 
-        if (!this.isStarted) {
-            this.isStarted = true;
-            this.startTime = dropOffEvent.getDropOffTimeMillis();
-        }
-
         this.window.add(dropOffEvent);
         // whether the current top ten events get changed.
         if (!this.nodeList.containsKey(dropOffEvent.getRoute())) {
@@ -91,8 +83,7 @@ public class RouteProcessor extends TripProcessor {
 
         List<NodeValue> currentList = this.nodeList.getTopValues();
 
-        if (!Util.isSame(this.lastRouteList, currentList) &&
-                         (dropOffEvent.getDropOffTimeMillis() - this.startTime > Constants.LARGE_WINDOW_SIZE)) {
+        if (!Util.isSame(this.lastRouteList, currentList)) {
             Set<Route> currentRoutSet = getRouteSet(currentList);
             this.lastRouteSet.removeAll(currentRoutSet);
             generateRouteChangeEvent(dropOffEvent.getStartTime(),
